@@ -14,10 +14,10 @@ conda config --add channels conda-forge 2> /dev/null
 conda config --add channels au-eoed 2> /dev/null
 
 ## creating GToTree environment and installing dependencies
-conda create -n parahunt mmseqs2 pal2nal.pl muscle paml --yes
+conda create -n parahunt diamond prodigal metabat2 --yes
 
 ## activating environment
-source activate parahunt
+source activate binblast
 
 ## creating directory for conda-env-specific source files
 mkdir -p ${CONDA_PREFIX}/etc/conda/activate.d
