@@ -1,4 +1,4 @@
-# BinBlaster
+BinBlaster
 
 Provide either raw contigs or ORFs (in amino acid format) from a metagenome-assembled genome.
 If raw contigs are provided, BinBlaster will use Prodigal to predict ORFs.
@@ -11,3 +11,20 @@ This program will then BLAST each ORF against the reference database
 
 The program will then output a file in CSV format summarizing the dominant taxanomic groups matched to each contig.
 This allows the user to visually inspect the data, seeing what the closest taxonomic group to each contig is.
+
+usage: binblast.py [-h] [-fasta FASTA] [-ref REF] [-bam BAM] [-out OUT]
+                     [-t T]
+
+************************************************************************
+
+Developed by Arkadiy Garber; University of Montana, Biological Sciences
+Please send comments and inquiries to rkdgarber@gmail.com
+************************************************************************
+
+optional arguments:
+  -h, --help    show this help message and exit
+  -fasta FASTA  Input assembly
+  -ref REF      Input reference protein database: nr
+  -bam BAM      Input sorted BAM file
+  -out OUT      Name output file
+  -t T          number of threads to use for DIAMOND BLAST
