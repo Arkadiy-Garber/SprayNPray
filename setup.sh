@@ -24,6 +24,9 @@ source activate binblast
 ## creating directory for conda-env-specific source files
 mkdir -p ${CONDA_PREFIX}/etc/conda/activate.d
 
+## adding path to executable script
+export PATH=\"$(pwd):"'$PATH'\"" \
+
 ## adding codeml-2.ctl file path:
 echo '#!/bin/sh'" \
 
