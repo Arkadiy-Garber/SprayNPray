@@ -382,33 +382,51 @@ parser = argparse.ArgumentParser(
 
     
     Developed by Arkadiy Garber; University of Montana, Biological Sciences
-    Please send comments and inquiries to rkdgarber@gmail.com
+    Please send comments and inquiries to arkadiy.garber@mso.umt.edu
     ************************************************************************
     '''))
 
-parser.add_argument('-fasta', type=str, help="Input bin/assembly in FASTA format", default="NA")
-parser.add_argument('-ref', type=str, help="Input reference protein database (recommended: nr)", default="NA")
+parser.add_argument('-g', type=str, help="Input bin/assembly in FASTA format", default="NA")
+parser.add_argument('-o', type=str, help="Input ORFs from bin/assembly in FASTA amino acid format", default="NA")
+parser.add_argument('-ref', type=str, help="Input reference protein database (recommended: nr). Could be FASTA file or "
+                                           "DIAMOND database file (with extension .dmnd)", default="NA")
 parser.add_argument('-bam', type=str, help="Input sorted BAM file with coverage info (optional)", default="NA")
 parser.add_argument('-out', type=str, help="Name output file", default="NA")
 parser.add_argument('-t', type=int, help="number of threads to use for DIAMOND BLAST", default=1)
+parser.add_argument('--skip_makedb', type=str, help="if the DIAMOND database already exists "
+                                                    "(i.e. file with extension .dmnd), and you provided that file to "
+                                                    "the -ref argument, then include this flag to skip the time-consuming "
+                                                    "step of building the DIAMOND BLAST database", const=True, nargs="?")
+parser.add_argument('--spades', type=str, help="is this a SPAdes assembly, with the SPAdes headers? If so, "
+                                               "then you can provide this flag, and BinBlaster will summarize using the coverage "
+                                               "information provided in the SPAdes headers", const=True, nargs="?")
 
 args = parser.parse_args()
 
-
+'''
 print("Running Prodigal: calling ORFs from provided contigs")
 os.system("prodigal -i %s -a %s-proteins.faa" % (args.fasta, args.fasta))
 
-print("Running Diamond: making DIAMOND BLAST database")
-os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
+if not args.skip_makedb:
+    print("Running Diamond: making DIAMOND BLAST database")
+    os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
 
-print("Running Diamond: running DIAMOND BLAST")
-os.system("diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d" % (args.ref, args.fasta, args.fasta, args.t))
+    print("Running Diamond: running DIAMOND BLAST")
+    os.system("diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d" % (args.ref, args.fasta, args.fasta, args.t))
+
+else:
+    print("Running Diamond: skipping makedb and running DIAMOND BLAST")
+    os.system(
+        "diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d"
+        % (args.ref, args.fasta, args.fasta, args.t))
 
 print("extracting DIAMOND BLAST hit information")
 os.system("blast-to-fasta.sh %s.blast %s %s.blast.fasta" % (args.fasta, args.ref, args.fasta))
+'''
 os.system("cut -f2 %s.blast > ids.txt" % (args.fasta))
 os.system("seqtk subseq %s ids.txt > %s.blast.fasta" % (args.ref, args.fasta))
 os.system("rm ids.txt")
+
 
 if args.bam != "NA":
     print("Extracting coverage information from the provided BAM files")
@@ -456,10 +474,6 @@ for i in blast:
     name = (nameDict[ls[1]])
     blastDict[contig].append(name)
 
-# for i in blastDict.keys():
-#     print(i)
-#     print(blastDict[i])
-#     print("")
 
 if args.bam != "NA":
     depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
@@ -470,16 +484,21 @@ if args.bam != "NA":
         depthDict[ls[0]]["depth"] = ls[2]
 
 out = open(args.out, "w")
-out.write("contig" + "," + "cov" + "," + "GC-content" + "," + "closest_blast_hits" + "\n")
+out.write("contig" + "," + "contigLength" + "," + "cov" + "," + "GC-content" + "," + "closest_blast_hits" + "\n")
 for i in assembly.keys():
     if args.bam != "NA":
-        depth = depthDict[i]
-    else:
+        depth = depthDict[i]["depth"]
+        length = depthDict[i]["length"]
+    elif args.spades:
         depth = lastItem(i.split("_"))
+        length = len(assembly[i])
+    else:
+        depth = "Unknown"
+        length = len(assembly[i])
     gc = gcDict[i]
     hitsList = blastDict[i]
     # print(hitsList)
-    out.write(i + "," + str(depth) + "," + str(gc) + ",")
+    out.write(i + "," + str(length) + "," + str(depth) + "," + str(gc) + ",")
     for j in hitsList:
         try:
             out.write(j + "; ")
