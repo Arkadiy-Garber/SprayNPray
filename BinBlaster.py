@@ -403,41 +403,44 @@ parser.add_argument('--spades', type=str, help="is this a SPAdes assembly, with 
 
 args = parser.parse_args()
 
-'''
+
 print("Running Prodigal: calling ORFs from provided contigs")
-os.system("prodigal -i %s -a %s-proteins.faa" % (args.fasta, args.fasta))
+os.system("prodigal -i %s -a %s-proteins.faa" % (args.g, args.g))
 
 if not args.skip_makedb:
     print("Running Diamond: making DIAMOND BLAST database")
     os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
 
     print("Running Diamond: running DIAMOND BLAST")
-    os.system("diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d" % (args.ref, args.fasta, args.fasta, args.t))
+    os.system("diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d" % (args.ref, args.g, args.g, args.t))
 
 else:
     print("Running Diamond: skipping makedb and running DIAMOND BLAST")
     os.system(
         "diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d"
-        % (args.ref, args.fasta, args.fasta, args.t))
+        % (args.ref, args.g, args.g, args.t))
 
 print("extracting DIAMOND BLAST hit information")
-os.system("blast-to-fasta.sh %s.blast %s %s.blast.fasta" % (args.fasta, args.ref, args.fasta))
-'''
-os.system("cut -f2 %s.blast > ids.txt" % (args.fasta))
-os.system("seqtk subseq %s ids.txt > %s.blast.fasta" % (args.ref, args.fasta))
-os.system("rm ids.txt")
+os.system("blast-to-fasta.sh %s.blast %s %s.blast.fasta" % (args.g, args.ref, args.g))
 
+
+print("cutting...")
+os.system("cut -f2 %s.blast > ids.txt" % (args.g))
+print("running seqtk...")
+os.system("seqtk subseq %s ids.txt > %s.blast.fasta" % (args.ref, args.g))
+os.system("rm ids.txt")
 
 if args.bam != "NA":
     print("Extracting coverage information from the provided BAM files")
-    os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s" % (args.fasta, args.bam))
+    os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s" % (args.g, args.bam))
+
 
 
 print("Calculating GC-content")
 gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
 GC = 0
 total = 0
-assembly = open(args.fasta)
+assembly = open(args.g)
 assembly = fasta2(assembly)
 for i in assembly.keys():
     seq = assembly[i]
@@ -452,11 +455,11 @@ for i in assembly.keys():
 
 print("Preparing summary: %s" % args.out)
 nameDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-blastFasta = open("%s.blast.fasta" % args.fasta)
+blastFasta = open("%s.blast.fasta" % args.g)
 for i in blastFasta:
     if re.match(r'>', i):
         line = (i.rstrip()[1:])
-        ls = line.split("\t")
+        ls = line.split(" ")
         id = (ls[0])
         try:
             name = (allButTheFirst(line[0:150], " "))
@@ -466,22 +469,23 @@ for i in blastFasta:
         except IndexError:
             pass
 
+
 blastDict = defaultdict(list)
-blast = open("%s.blast" % args.fasta)
+blast = open("%s.blast" % args.g)
 for i in blast:
     ls = i.rstrip().split("\t")
     contig = allButTheLast(ls[0], "_")
     name = (nameDict[ls[1]])
     blastDict[contig].append(name)
 
-
 if args.bam != "NA":
     depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-    depth = open("%s.depth" % args.fasta)
+    depth = open("%s.depth" % args.g)
     for i in depth:
         ls = i.rstrip().split("\t")
         depthDict[ls[0]]["length"] = ls[1]
         depthDict[ls[0]]["depth"] = ls[2]
+
 
 out = open(args.out, "w")
 out.write("contig" + "," + "contigLength" + "," + "cov" + "," + "GC-content" + "," + "closest_blast_hits" + "\n")
@@ -497,7 +501,6 @@ for i in assembly.keys():
         length = len(assembly[i])
     gc = gcDict[i]
     hitsList = blastDict[i]
-    # print(hitsList)
     out.write(i + "," + str(length) + "," + str(depth) + "," + str(gc) + ",")
     for j in hitsList:
         try:
