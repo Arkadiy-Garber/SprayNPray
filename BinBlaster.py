@@ -6,6 +6,7 @@ import textwrap
 import argparse
 import numpy as np
 import sys
+import statistics
 
 
 def firstNonspace(ls):
@@ -421,13 +422,13 @@ else:
         % (args.ref, args.g, args.g, args.t))
 
 print("extracting DIAMOND BLAST hit information")
-os.system("blast-to-fasta.sh %s.blast %s %s.blast.fasta" % (args.g, args.ref, args.g))
+os.system("blast-to-fasta.sh %s.blast %s %s.blast-fasta" % (args.g, args.ref, args.g))
 
 
 print("cutting...")
 os.system("cut -f2 %s.blast > ids.txt" % (args.g))
 print("running seqtk...")
-os.system("seqtk subseq %s ids.txt > %s.blast.fasta" % (args.ref, args.g))
+os.system("seqtk subseq %s ids.txt > %s.blast-fasta" % (args.ref, args.g))
 os.system("rm ids.txt")
 
 if args.bam != "NA":
@@ -455,7 +456,7 @@ for i in assembly.keys():
 
 print("Preparing summary: %s" % args.out)
 nameDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-blastFasta = open("%s.blast.fasta" % args.g)
+blastFasta = open("%s.blast-fasta" % args.g)
 for i in blastFasta:
     if re.match(r'>', i):
         line = (i.rstrip()[1:])
@@ -470,13 +471,16 @@ for i in blastFasta:
             pass
 
 
+aaiDict = defaultdict(list)
 blastDict = defaultdict(list)
 blast = open("%s.blast" % args.g)
 for i in blast:
     ls = i.rstrip().split("\t")
     contig = allButTheLast(ls[0], "_")
     name = (nameDict[ls[1]])
+    aai = ls[2]
     blastDict[contig].append(name)
+    aaiDict[contig].append(float(aai))
 
 if args.bam != "NA":
     depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
@@ -488,7 +492,7 @@ if args.bam != "NA":
 
 
 out = open(args.out, "w")
-out.write("contig" + "," + "contigLength" + "," + "cov" + "," + "GC-content" + "," + "closest_blast_hits" + "\n")
+out.write("contig" + "," + "contig_length" + "," + "hits_per_contig" + "," + "cov" + "," + "GC-content" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
 for i in assembly.keys():
     if args.bam != "NA":
         depth = depthDict[i]["depth"]
@@ -501,7 +505,8 @@ for i in assembly.keys():
         length = len(assembly[i])
     gc = gcDict[i]
     hitsList = blastDict[i]
-    out.write(i + "," + str(length) + "," + str(depth) + "," + str(gc) + ",")
+    AAI = statistics.mean(aaiDict[i])
+    out.write(i + "," + str(length) + "," + str(len(hitsList)/length) + "," + str(depth) + "," + str(gc) + "," + str(AAI) + ",")
     for j in hitsList:
         try:
             out.write(j + "; ")
