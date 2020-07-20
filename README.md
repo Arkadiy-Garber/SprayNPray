@@ -1,4 +1,4 @@
-# BinBlaster
+# SprayAndPray
 
 Provide either raw contigs or ORFs (in amino acid format) from a metagenome-assembled genome.
 If raw contigs are provided, BinBlaster will use Prodigal to predict ORFs.
