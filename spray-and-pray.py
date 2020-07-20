@@ -375,7 +375,7 @@ def delim(line):
 
 
 parser = argparse.ArgumentParser(
-    prog="BinBlaster.py",
+    prog="spray-and-pray.py",
     formatter_class=argparse.RawDescriptionHelpFormatter,
     description=textwrap.dedent('''
     ************************************************************************
