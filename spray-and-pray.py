@@ -388,7 +388,7 @@ parser = argparse.ArgumentParser(
     '''))
 
 parser.add_argument('-g', type=str, help="Input bin/assembly in FASTA format", default="NA")
-parser.add_argument('-o', type=str, help="Input ORFs from bin/assembly in FASTA amino acid format", default="NA")
+parser.add_argument('-o', type=str, help="Input ORFs in FASTA amino acid format", default="NA")
 parser.add_argument('-ref', type=str, help="Input reference protein database (recommended: nr). Could be FASTA file or "
                                            "DIAMOND database file (with extension .dmnd)", default="NA")
 parser.add_argument('-bam', type=str, help="Input sorted BAM file with coverage info (optional)", default="NA")
@@ -401,138 +401,210 @@ parser.add_argument('--skip_makedb', type=str, help="if the DIAMOND database alr
 parser.add_argument('--spades', type=str, help="is this a SPAdes assembly, with the SPAdes headers? If so, "
                                                "then you can provide this flag, and BinBlaster will summarize using the coverage "
                                                "information provided in the SPAdes headers", const=True, nargs="?")
+parser.add_argument('--meta', type=str, help="meta procedure for prodigal", const=True, nargs="?")
 
 args = parser.parse_args()
 
+if args.o != "NA":
+    file = open(args.g)
+    file = fasta2(file)
+    if not args.skip_makedb:
+        print("Running Diamond: making DIAMOND BLAST database")
+        os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
 
-print("Running Prodigal: calling ORFs from provided contigs")
-os.system("prodigal -i %s -a %s-proteins.faa" % (args.g, args.g))
+        print("Running Diamond: running DIAMOND BLAST")
+        os.system("diamond blastp --db %s.dmnd --query %s --outfmt 6 --out %s.blast --max-target-seqs 15 --evalue 1E-6 --threads %d" % (args.ref, args.o, args.o, args.t))
 
-if not args.skip_makedb:
-    print("Running Diamond: making DIAMOND BLAST database")
-    os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
+    else:
+        print("Running Diamond: skipping makedb and running DIAMOND BLAST")
+        os.system(
+            "diamond blastp --db %s.dmnd --query %s --outfmt 6 --out %s.blast --max-target-seqs 15 --evalue 1E-6 --threads %d"
+            % (args.ref, args.o, args.o, args.t))
 
-    print("Running Diamond: running DIAMOND BLAST")
-    os.system("diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d" % (args.ref, args.g, args.g, args.t))
+    print("extracting DIAMOND BLAST hit information")
+    os.system("blast-to-fasta.sh %s.blast %s %s.blast-fasta" % (args.o, args.ref, args.o))
+
+    print("cutting...")
+    os.system("cut -f2 %s.blast > ids.txt" % (args.o))
+    print("running seqtk...")
+    os.system("seqtk subseq %s ids.txt > %s.blast-fasta" % (args.ref, args.o))
+    os.system("rm ids.txt")
+
+    print("Preparing summary: %s" % args.out)
+    nameDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    blastFasta = open("%s.blast-fasta" % args.o)
+    for i in blastFasta:
+        if re.match(r'>', i):
+            line = (i.rstrip()[1:])
+            ls = line.split(" ")
+            id = (ls[0])
+            try:
+                name = (allButTheFirst(line[0:150], " "))
+                name = name.split("]")[0]
+                name = name.split("[")[1]
+                nameDict[id] = name
+            except IndexError:
+                pass
+    aaiDict = defaultdict(list)
+    blastDict = defaultdict(list)
+    blast = open("%s.blast" % args.o)
+    for i in blast:
+        ls = i.rstrip().split("\t")
+        orf = ls[2]
+        name = (nameDict[ls[1]])
+        blastDict[orf].append(name)
+        aai = ls[2]
+        aaiDict[orf].append(float(aai))
+
+    out = open(args.out, "w")
+    out.write(
+        "ORF" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
+    for i in file.keys():
+
+        hitsList = blastDict[i]
+        try:
+            AAI = statistics.mean(aaiDict[i])
+        except statistics.StatisticsError:
+            AAI = "NA"
+        out.write(
+            i + "," + str(AAI) + ",")
+
+        for j in hitsList:
+            try:
+                out.write(j + "; ")
+            except TypeError:
+                pass
+        out.write("\n")
+
+    print("Finished!")
+
 
 else:
-    print("Running Diamond: skipping makedb and running DIAMOND BLAST")
-    os.system(
-        "diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d"
-        % (args.ref, args.g, args.g, args.t))
+    file = open(args.g)
+    file = fasta2(file)
+    total = 0
+    for i in file.keys():
+        total += len(file[i])
 
-print("extracting DIAMOND BLAST hit information")
-os.system("blast-to-fasta.sh %s.blast %s %s.blast-fasta" % (args.g, args.ref, args.g))
-
-
-print("cutting...")
-os.system("cut -f2 %s.blast > ids.txt" % (args.g))
-print("running seqtk...")
-os.system("seqtk subseq %s ids.txt > %s.blast-fasta" % (args.ref, args.g))
-os.system("rm ids.txt")
-
-if args.bam != "NA":
-    print("Extracting coverage information from the provided BAM files")
-    os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s" % (args.g, args.bam))
-
-
-
-print("Calculating GC-content")
-gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-GC = 0
-total = 0
-assembly = open(args.g)
-assembly = fasta2(assembly)
-for i in assembly.keys():
-    seq = assembly[i]
-    total += len(seq)
-    gc = 0
-    for bp in seq:
-        if bp == "C" or bp == "G":
-            GC += 1
-            gc += 1
-    gcDict[i] = str(float(gc/len(seq)))
-
-
-print("Preparing summary: %s" % args.out)
-nameDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-blastFasta = open("%s.blast-fasta" % args.g)
-for i in blastFasta:
-    if re.match(r'>', i):
-        line = (i.rstrip()[1:])
-        ls = line.split(" ")
-        id = (ls[0])
-        try:
-            name = (allButTheFirst(line[0:150], " "))
-            name = name.split("]")[0]
-            name = name.split("[")[1]
-            nameDict[id] = name
-        except IndexError:
+    if total < 20000:
+        if args.meta:
             pass
+        else:
+            print("looks like there are less than 20000 characters in your provided sequences file. Please re-run the script with the --meta flag")
+            raise SystemExit
 
-
-aaiDict = defaultdict(list)
-blastDict = defaultdict(list)
-blast = open("%s.blast" % args.g)
-for i in blast:
-    ls = i.rstrip().split("\t")
-    contig = allButTheLast(ls[0], "_")
-    name = (nameDict[ls[1]])
-    aai = ls[2]
-    blastDict[contig].append(name)
-    aaiDict[contig].append(float(aai))
-
-if args.bam != "NA":
-    depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-    depth = open("%s.depth" % args.g)
-    for i in depth:
-        ls = i.rstrip().split("\t")
-        depthDict[ls[0]]["length"] = ls[1]
-        depthDict[ls[0]]["depth"] = ls[2]
-
-
-out = open(args.out, "w")
-out.write("contig" + "," + "contig_length" + "," + "hits_per_contig" + "," + "cov" + "," + "GC-content" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
-for i in assembly.keys():
-    if args.bam != "NA":
-        depth = depthDict[i]["depth"]
-        length = depthDict[i]["length"]
-    elif args.spades:
-        depth = lastItem(i.split("_"))
-        length = len(assembly[i])
+    print("Running Prodigal: calling ORFs from provided contigs")
+    if args.meta:
+        os.system("prodigal -i %s -a %s-proteins.faa -p meta" % (args.g, args.g))
     else:
-        depth = "Unknown"
-        length = len(assembly[i])
-    gc = gcDict[i]
-    hitsList = blastDict[i]
-    AAI = statistics.mean(aaiDict[i])
-    out.write(i + "," + str(length) + "," + str(len(hitsList)/length) + "," + str(depth) + "," + str(gc) + "," + str(AAI) + ",")
-    for j in hitsList:
+        os.system("prodigal -i %s -a %s-proteins.faa" % (args.g, args.g))
+
+    if not args.skip_makedb:
+        print("Running Diamond: making DIAMOND BLAST database")
+        os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
+
+        print("Running Diamond: running DIAMOND BLAST")
+        os.system("diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d" % (args.ref, args.g, args.g, args.t))
+
+    else:
+        print("Running Diamond: skipping makedb and running DIAMOND BLAST")
+        os.system(
+            "diamond blastp --db %s.dmnd --query %s-proteins.faa --outfmt 6 --out %s.blast --max-target-seqs 1 --evalue 1E-6 --threads %d"
+            % (args.ref, args.g, args.g, args.t))
+
+    print("extracting DIAMOND BLAST hit information")
+    os.system("blast-to-fasta.sh %s.blast %s %s.blast-fasta" % (args.g, args.ref, args.g))
+
+
+    print("cutting...")
+    os.system("cut -f2 %s.blast > ids.txt" % (args.g))
+    print("running seqtk...")
+    os.system("seqtk subseq %s ids.txt > %s.blast-fasta" % (args.ref, args.g))
+    os.system("rm ids.txt")
+
+    if args.bam != "NA":
+        print("Extracting coverage information from the provided BAM files")
+        os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s" % (args.g, args.bam))
+
+    print("Calculating GC-content")
+    gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    GC = 0
+    total = 0
+    assembly = open(args.g)
+    assembly = fasta2(assembly)
+    for i in assembly.keys():
+        seq = assembly[i]
+        total += len(seq)
+        gc = 0
+        for bp in seq:
+            if bp == "C" or bp == "G":
+                GC += 1
+                gc += 1
+        gcDict[i] = str(float(gc/len(seq)))
+
+    print("Preparing summary: %s" % args.out)
+    nameDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    blastFasta = open("%s.blast-fasta" % args.g)
+    for i in blastFasta:
+        if re.match(r'>', i):
+            line = (i.rstrip()[1:])
+            ls = line.split(" ")
+            id = (ls[0])
+            try:
+                name = (allButTheFirst(line[0:150], " "))
+                name = name.split("]")[0]
+                name = name.split("[")[1]
+                nameDict[id] = name
+            except IndexError:
+                pass
+
+
+    aaiDict = defaultdict(list)
+    blastDict = defaultdict(list)
+    blast = open("%s.blast" % args.g)
+    for i in blast:
+        ls = i.rstrip().split("\t")
+        contig = allButTheLast(ls[0], "_")
+        name = (nameDict[ls[1]])
+        aai = ls[2]
+        blastDict[contig].append(name)
+        aaiDict[contig].append(float(aai))
+
+    if args.bam != "NA":
+        depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+        depth = open("%s.depth" % args.g)
+        for i in depth:
+            ls = i.rstrip().split("\t")
+            depthDict[ls[0]]["length"] = ls[1]
+            depthDict[ls[0]]["depth"] = ls[2]
+
+    out = open(args.out, "w")
+    out.write("contig" + "," + "contig_length" + "," + "hits_per_contig" + "," + "cov" + "," + "GC-content" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
+    for i in assembly.keys():
+        if args.bam != "NA":
+            depth = depthDict[i]["depth"]
+            length = depthDict[i]["length"]
+        elif args.spades:
+            depth = lastItem(i.split("_"))
+            length = len(assembly[i])
+        else:
+            depth = "Unknown"
+            length = len(assembly[i])
+        gc = gcDict[i]
+        hitsList = blastDict[i]
         try:
-            out.write(j + "; ")
-        except TypeError:
-            pass
-    out.write("\n")
+            AAI = statistics.mean(aaiDict[i])
+        except statistics.StatisticsError:
+            AAI = "NA"
+        out.write(i + "," + str(length) + "," + str(len(hitsList)/length) + "," + str(depth) + "," + str(gc) + "," + str(AAI) + ",")
+        for j in hitsList:
+            try:
+                out.write(j + "; ")
+            except TypeError:
+                pass
+        out.write("\n")
 
-print("Finished!")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print("Finished!")
 
 
 
