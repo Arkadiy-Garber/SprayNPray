@@ -406,7 +406,7 @@ parser.add_argument('--meta', type=str, help="meta procedure for prodigal", cons
 args = parser.parse_args()
 
 if args.o != "NA":
-    file = open(args.g)
+    file = open(args.o)
     file = fasta2(file)
     if not args.skip_makedb:
         print("Running Diamond: making DIAMOND BLAST database")
