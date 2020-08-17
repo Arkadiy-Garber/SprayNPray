@@ -450,7 +450,7 @@ if args.o != "NA":
     blast = open("%s.blast" % args.o)
     for i in blast:
         ls = i.rstrip().split("\t")
-        orf = ls[2]
+        orf = ls[0]
         name = (nameDict[ls[1]])
         blastDict[orf].append(name)
         aai = ls[2]
