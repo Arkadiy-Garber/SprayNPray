@@ -11,3 +11,5 @@ This program will then DIAMOND BLAST each ORF against the reference database
 
 The program will then output a file in CSV format summarizing the dominant taxanomic groups matched to each contig.
 This allows the user to visually inspect the data, seeing what the closest taxonomic group to each contig is.
+
+See the Wiki Tab for a brief tutorial on how to use this software.
