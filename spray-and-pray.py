@@ -575,8 +575,9 @@ else:
         depth = open("%s.depth" % args.g)
         for i in depth:
             ls = i.rstrip().split("\t")
-            depthDict[ls[0]]["length"] = int(ls[1])
-            depthDict[ls[0]]["depth"] = ls[2]
+            if ls[1] != "contigLen":
+                depthDict[ls[0]]["length"] = int(ls[1])
+                depthDict[ls[0]]["depth"] = ls[2]
 
     out = open(args.out, "w")
     out.write("contig" + "," + "contig_length" + "," + "hits_per_contig" + "," + "cov" + "," + "GC-content" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
