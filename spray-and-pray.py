@@ -548,7 +548,7 @@ else:
     for i in blastFasta:
         if re.match(r'>', i):
             line = (i.rstrip()[1:])
-            ls = line.split(" ")
+            ls = line.split("\t")
             id = (ls[0])
             try:
                 name = (allButTheFirst(line[0:150], " "))
