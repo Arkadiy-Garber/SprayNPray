@@ -13,3 +13,9 @@ The program will then output a file in CSV format summarizing the dominant taxan
 This allows the user to visually inspect the data, seeing what the closest taxonomic group to each contig is.
 
 See the Wiki Tab for a brief tutorial on how to use this software.
+
+Pseudofinder is developed by Arkadiy Garber, Arizona State University, Tempe, Arizona, USA.
+
+This project still a work in progress, so there is no official publication. If it was useful for your work, you can cite it as: A. Garber 2020: spray-and-pray, GitHub repository: https://github.com/filip-husnik/pseudo-finder/.
+
+Please also cite various dependencies used by Pseudofinder.
