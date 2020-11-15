@@ -16,6 +16,6 @@ Additionally, the user can specify a set of criteria (e.g. GC-content, read cove
 
 SprayNPray is developed by Arkadiy Garber, Arizona State University, Tempe, Arizona, USA.
 
-There is no official publication for spray-and-pray. If it was useful for your work, you can cite it as: A. Garber 2020: SprayNPray, GitHub repository: https://github.com/Arkadiy-Garber/SprayNPray.
+There is no official publication for SprayNPray. If it was useful for your work, you can cite it as: A. Garber 2020: SprayNPray, GitHub repository: https://github.com/Arkadiy-Garber/SprayNPray.
 
 Please also cite dependencies used by spray-and-pray.
