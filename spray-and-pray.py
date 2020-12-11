@@ -779,6 +779,8 @@ else:
             for j in hitsList:
                 try:
                     Genus = j.split(" ")[0]
+                    if re.findall(r'symbiont', Genus):
+                        Genus = "Bacteria"
 
                     try:
                         species = j.split(" ")[1]
