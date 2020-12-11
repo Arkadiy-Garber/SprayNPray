@@ -72,3 +72,9 @@ In the above command, we require that at least 50% of contig's genes have a top 
 
 In the above comomand, we require a gene density of 0.5 genes per kb, maximum length of 1 Mb, top DIAMOND hit to be to a bacterial gene, and that at least 50% of the contig's genes to be of bacterial origin to be written to endosymbionts.fa
 
+
+### Identifying putative HGTs in an assembly of the mealybug Planococcus citri
+
+    ParaHunter.sh -a P_citri.fa -out putative_hgts.csv --hgt -ref /path/to/nr/nr.faa
+
+
