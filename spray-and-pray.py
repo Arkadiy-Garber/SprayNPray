@@ -661,7 +661,7 @@ else:
                 depthDict[ls[0]]["depth"] = ls[2]
 
     # reading silva headers
-    silvaDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    silvaDict = defaultdict(lambda: defaultdict(lambda: 'unclassified'))
     silva = open(silvaFile)
     for i in silva:
         ls = i.rstrip().split("\t")
