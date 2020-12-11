@@ -7,6 +7,8 @@ NC='\033[0m'
 
 chmod +x spray-and-pray.py
 
+gzip -d taxmap_slv_ssu_ref_nr_138.1.txt.gz
+
 printf "\n    ${GREEN}Setting up conda environment...${NC}\n\n"
 
 ## adding conda channels
