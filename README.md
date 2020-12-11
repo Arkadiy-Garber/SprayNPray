@@ -9,7 +9,9 @@ Please also cite the various dependencies used by spray-and-pray: [DIAMOND](http
 
 Provide either raw contigs or ORFs (amino acid) in FASTA format.
 A reference protein dataset also needs to be provided. Ideally, this should be NCBI's RefSeq or nr database from NCBI, 
-which can be downloaded via: wget ftp://ftp.ncbi.nih.gov/blast/db/FASTA/nr.gz
+which can be downloaded via:
+    
+    wget ftp://ftp.ncbi.nih.gov/blast/db/FASTA/nr.gz
 
 This program will then DIAMOND BLAST each ORF against the reference database
 (This takes about 30 minutes for a typical bacteria genome of ~4Mbp).
@@ -40,7 +42,10 @@ Do not worry about the dependencies after conda installation. Just type:
 
 ## Installation without conda (not recommended):
 
-git clone https://github.com/Arkadiy-Garber/SprayNPray.git
+    git clone https://github.com/Arkadiy-Garber/SprayNPray.git
+    export PATH=$PATH:$(pwd)
+
+(be sure to put spray-and-pray.py into your $PATH in your bash profile)
 
 ### Install Dependencies:
 
