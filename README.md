@@ -33,6 +33,23 @@ Please also cite the various dependencies used by spray-and-pray: [DIAMOND](http
     bash setup.sh
     source activate sprayandpray
 
+Do not worry about the dependencies after conda installation. Just type:
+
+`source deactivate` when finished using the program.
+
+
+## Installation without conda (not recommended):
+
+`git clone https://github.com/Arkadiy-Garber/SprayNPray.git
+
+## Install Dependencies:
+
+* [DIAMOND](https://github.com/bbuchfink/diamond)
+* [Prodigal](https://github.com/hyattpd/Prodigal)
+* [Metabat](https://bitbucket.org/berkeleylab/metabat)
+* [Python3](https://www.python.org/download/releases/3.0/)
+
+
 ## quick-start
 
     spray-and-pray.py -g genomeContigs.fa -out genomeContigs -ref /path/to/nr/nr.faa
