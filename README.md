@@ -35,9 +35,7 @@ Please also cite the various dependencies used by spray-and-pray: [DIAMOND](http
     bash setup.sh
     source activate sprayandpray
 
-Do not worry about the dependencies after conda installation. Just type:
-
-`source deactivate` when finished using the program.
+Do not worry about the dependencies after conda installation. Just enter `source deactivate` when finished using the program.
 
 
 ## Installation without conda (not recommended):
