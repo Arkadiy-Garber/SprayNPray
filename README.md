@@ -53,10 +53,16 @@ Do not worry about the dependencies after conda installation. Just enter `source
 * [Python3](https://www.python.org/download/releases/3.0/)
 
 
-## quick-start
+## Usage
+
+### quick-start
 
     spray-and-pray.py -g genomeContigs.fa -out genomeContigs -ref /path/to/nr/nr.faa
 
-### setting minimum amino acid identity for clustering to 35%, with query coverage of at least 50%
+### decontaminating a Pseudomonas assembly
 
-    ParaHunter.sh -a genomeOrfs_aa.faa -n genomeOrfs_nuc.fna -m 0.35 -c 0.5
+    ParaHunter.sh -a pseudomonas_crude.fa -out pseudomonas_clean.fa -Genus Pseudomonas -species aeruginosa -perc 50 --fa -ref /path/to/nr/nr.faa
+
+### Pulling out endosymbiont genomes from an assembly of the mealybug Maconellicoccus hirsutus
+
+    ParaHunter.sh -a M_hirsutus_assembly.fa -out endosymbionts.fa -cd 0.5 -L 1000000 -perc 50 --fa -ref /path/to/nr/nr.faa -Domain Bacteria
