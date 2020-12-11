@@ -484,7 +484,7 @@ for i in file:
 location = allButTheLast(location, "/")
 
 silvaFile = location + "/taxmap_slv_ssu_ref_nr_138.1.txt"
-
+os.system("rm mainDir.txt")
 
 if args.fa:
     print("SprayNPray will write a FASTA file with contigs matching user-specified metrics: " + args.out + "-contigs.fa")
@@ -580,7 +580,6 @@ else:
     total = 0
     for i in file.keys():
         total += len(file[i])
-
 
     if total < 20000:
         if args.meta:
