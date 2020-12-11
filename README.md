@@ -59,7 +59,7 @@ Do not worry about the dependencies after conda installation. Just enter `source
 
     spray-and-pray.py -g genomeContigs.fa -out genomeContigs -ref /path/to/nr/nr.faa
 
-### decontaminating a Pseudomonas assembly
+### Decontaminating a Pseudomonas assembly
 
     ParaHunter.sh -a pseudomonas_crude.fa -out pseudomonas_clean.fa -Genus Pseudomonas -species aeruginosa -perc 50 --fa -ref /path/to/nr/nr.faa
 
