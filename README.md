@@ -1,6 +1,7 @@
 # SprayNPray
 
-There is no official publication for SprayNPray. If it was useful for your work, you can cite it as follows:
+## Citing SprayNPray
+If you found this software useful to your research please cite as follows:
 
 Garber, AI. 2020: SprayNPray: quick and easy taxonomic profiling of genome and metagenome contigs, GitHub repository: https://github.com/Arkadiy-Garber/SprayNPray.
 
@@ -19,13 +20,6 @@ This program will then DIAMOND BLAST each ORF against the reference database
 The program will then output a file in CSV format summarizing the dominant taxanomic groups matched to each contig.
 This allows the user to visually inspect the data, seeing what the closest taxonomic group to each contig is.
 Additionally, the user can specify a set of criteria (e.g. GC-content, read coverage, coding density, closest taxonomic hits) to re-write the provided contigs into a new FASTA file.
-
-## Citing SprayNPray
-If you found this software useful to your research please cite as follows:
-
-Garber, AI. 2020: SprayNPray: quick and easy taxonomic profiling of genome and metagenome contigs, GitHub repository: https://github.com/Arkadiy-Garber/SprayNPray.
-
-Please also cite the various dependencies used by spray-and-pray: [DIAMOND](https://pubmed.ncbi.nlm.nih.gov/25402007/), [Prodigal](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2848648/), and [Metabat2](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6662567/).
 
 
 ## easy-installation:
