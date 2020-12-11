@@ -63,6 +63,12 @@ Do not worry about the dependencies after conda installation. Just enter `source
 
     ParaHunter.sh -a pseudomonas_crude.fa -out pseudomonas_clean.fa -Genus Pseudomonas -species aeruginosa -perc 50 --fa -ref /path/to/nr/nr.faa
 
+In the above command, we require that at least 50% of contig's genes have a top DIAMOND hit to Pseudomonas aruginosa. Contigs matching these parameters will be written to a new FASTA file: pseudomonas_clean.fa
+
+
 ### Pulling out endosymbiont genomes from an assembly of the mealybug Maconellicoccus hirsutus
 
     ParaHunter.sh -a M_hirsutus_assembly.fa -out endosymbionts.fa -cd 0.5 -L 1000000 -perc 50 --fa -ref /path/to/nr/nr.faa -Domain Bacteria
+
+In the above comomand, we require a gene density of 0.5 genes per kb, maximum length of 1 Mb, top DIAMOND hit to be to a bacterial gene, and that at least 50% of the contig's genes to be of bacterial origin to be written to endosymbionts.fa
+
