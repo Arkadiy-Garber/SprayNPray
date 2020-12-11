@@ -779,8 +779,8 @@ else:
             for j in hitsList:
                 try:
                     Genus = j.split(" ")[0]
-                    if re.findall(r'symbiont', Genus):
-                        Genus = "Bacteria"
+                    if Genus in ["Candidatus", "uncultured"]:
+                        Genus = j.split(" ")[1]
 
                     try:
                         species = j.split(" ")[1]
@@ -797,6 +797,11 @@ else:
                         Domain = "unclassifed"
                         Phylum = "unclassifed"
                         Class = "unclassifed"
+
+                    if re.findall(r'symbiont', j):
+                        Domain = j
+                        Phylum = j
+                        Class = j
 
                     if args.lvl == "Domain":
                         out.write(Domain + "; ")
