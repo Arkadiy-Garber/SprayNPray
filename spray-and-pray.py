@@ -453,7 +453,7 @@ parser.add_argument('-L', type=float, help="maximum length of contig to write to
 
 parser.add_argument('-aai', type=float, help="minimum average amino acid identity (percent) to reference proteins (default 35)", default=35)
 
-parser.add_argument('-key', type=str, help="Path to the taxmap_slv_ssu_ref_nr_138.1.txt file, which should be in the repository containing this program", default="NA")
+# parser.add_argument('-key', type=str, help="Path to the taxmap_slv_ssu_ref_nr_138.1.txt file, which should be in the repository containing this program", default="NA")
 
 args = parser.parse_args()
 
@@ -474,6 +474,17 @@ if args.lvl != "NA":
 
 if args.blast != "NA":
     print("Provided BLAST output file: " + args.blast)
+
+os.system("which spray-and-pray.py > mainDir.txt")
+
+file = open("mainDir.txt")
+location = os.getcwd()
+for i in file:
+    location = i.rstrip()
+location = allButTheLast(location, "/")
+
+silvaFile = location + "/taxmap_slv_ssu_ref_nr_138.1.txt"
+
 
 if args.fa:
     print("SprayNPray will write a FASTA file with contigs matching user-specified metrics: " + args.out + "-contigs.fa")
@@ -652,7 +663,7 @@ else:
 
     # reading silva headers
     silvaDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-    silva = open(args.key)
+    silva = open(silvaFile)
     for i in silva:
         ls = i.rstrip().split("\t")
         if ls[0] != "primaryAccession":
