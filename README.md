@@ -40,9 +40,9 @@ Do not worry about the dependencies after conda installation. Just type:
 
 ## Installation without conda (not recommended):
 
-`git clone https://github.com/Arkadiy-Garber/SprayNPray.git
+git clone https://github.com/Arkadiy-Garber/SprayNPray.git
 
-## Install Dependencies:
+### Install Dependencies:
 
 * [DIAMOND](https://github.com/bbuchfink/diamond)
 * [Prodigal](https://github.com/hyattpd/Prodigal)
