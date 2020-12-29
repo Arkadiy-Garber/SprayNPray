@@ -3,7 +3,7 @@
 ## Citing SprayNPray
 If you found this software useful to your research please cite as follows:
 
-Garber, AI. 2020: SprayNPray: quick and easy taxonomic profiling of genome and metagenome contigs, GitHub repository: https://github.com/Arkadiy-Garber/SprayNPray.
+Garber, AI. 2020: SprayNPray: Rapid and simple taxonomic profiling of genome and metagenome contigs, GitHub repository: https://github.com/Arkadiy-Garber/SprayNPray.
 
 Please also cite the various dependencies used by spray-and-pray: [DIAMOND](https://pubmed.ncbi.nlm.nih.gov/25402007/), [Prodigal](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2848648/), and [Metabat2](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6662567/).
 
