@@ -1,11 +1,11 @@
 # SprayNPray
 ## Rapid and simple taxonomic profiling of genome and metagenome contigs 
-#### Bin validation
-#### Contaminant identification and filtering
-#### Endosymbiont identification
-#### Identification of bacteria-to-eukaryote horizontal gene transfers
+#### - Bin validation
+#### - Contaminant identification and filtering
+#### - Endosymbiont identification
+#### - Identification of bacteria-to-eukaryote horizontal gene transfers
 
-### Citing SprayNPray
+###= Citing SprayNPray
 If you found this software useful to your research please cite as follows:
 
 Garber, AI. 2020: SprayNPray: Rapid and simple taxonomic profiling of genome and metagenome contigs, GitHub repository: https://github.com/Arkadiy-Garber/SprayNPray.
