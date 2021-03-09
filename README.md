@@ -38,7 +38,7 @@ Additionally, the user can specify a set of criteria (e.g. GC-content, read cove
 Do not worry about the dependencies after conda installation. Just enter `source deactivate` when finished using the program.
 
 
-## Installation without conda (not recommended):
+## Installation without conda:
 
     git clone https://github.com/Arkadiy-Garber/SprayNPray.git
     export PATH=$PATH:$(pwd)
