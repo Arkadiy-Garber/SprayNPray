@@ -1,6 +1,7 @@
 # SprayNPray
 ## Rapid and simple taxonomic profiling of genome and metagenome contigs 
 #### - Bin validation
+#### - Metagenome profiling
 #### - Contaminant identification and filtering
 #### - Endosymbiont identification
 #### - Identification of bacteria-to-eukaryote horizontal gene transfers
