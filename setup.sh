@@ -31,7 +31,7 @@ export PATH=\"$(pwd):"'$PATH'\"" \
 
 echo '#!/bin/sh'" \
 
-export rscripts=\"$(pwd)/rscripts\"" >> ${CONDA_PREFIX}/etc/conda/activate.d/env_vars.sh
+export rscripts=\"$(pwd)\"" >> ${CONDA_PREFIX}/etc/conda/activate.d/env_vars.sh
 
 # re-activating environment so variable and PATH changes take effect
 source activate sprayandpray
