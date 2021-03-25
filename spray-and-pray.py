@@ -389,7 +389,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-g', type=str, help="Input bin/assembly in FASTA format", default="NA")
 
-parser.add_argument('-o', type=str, help="Input ORFs in FASTA amino acid format", default="NA")
+# parser.add_argument('-o', type=str, help="Input ORFs in FASTA amino acid format", default="NA")
 
 parser.add_argument('-ref', type=str, help="Input reference protein database (recommended: nr). Could be FASTA file or "
                                            "DIAMOND database file (with extension .dmnd)", default="NA")
@@ -419,15 +419,17 @@ parser.add_argument('--fa', type=str, help="write subset of contigs that match u
 
 parser.add_argument('-blast', type=str, help="DIAMOND BLAST output file from previous run", default="NA")
 
-parser.add_argument('-Domain', type=str, help="domain expected among hits to provided contigs, to be written to FASTA file (e.g. Bacteria, Archaea, Eukaryota)", default="NA")
+parser.add_argument('-hits', type=str, help="total number of DIAMOND hits to report in DIAMOND output file", default="NA")
 
-parser.add_argument('-Phylum', type=str, help="phylum expected among hits to provided contigs, to be written to FASTA file (e.g. Proteobacteria). "
+parser.add_argument('-domain', type=str, help="domain expected among hits to provided contigs, to be written to FASTA file (e.g. Bacteria, Archaea, Eukaryota)", default="NA")
+
+parser.add_argument('-phylum', type=str, help="phylum expected among hits to provided contigs, to be written to FASTA file (e.g. Proteobacteria). "
                                               "If you provide this name, please be sure to also provide the domain name via -domain", default="NA")
 
-parser.add_argument('-Class', type=str, help="class name expected among hits to provided contigs, to be written to FASTA file (e.g. Gammaproteobacteria). "
+parser.add_argument('-class', type=str, help="class name expected among hits to provided contigs, to be written to FASTA file (e.g. Gammaproteobacteria). "
                                              "If you provide this name, please be sure to also provide the domain and phylum names", default="NA")
 
-parser.add_argument('-Genus', type=str, help="genus name expected among hits to provided contigs, to be written to FASTA file (e.g. Shewanella). "
+parser.add_argument('-genus', type=str, help="genus name expected among hits to provided contigs, to be written to FASTA file (e.g. Shewanella). "
                                              "If you provide this name, please be sure to also provide the domain, phylum, and class names", default="NA")
 
 parser.add_argument('-species', type=str, help="species name expected among hits to provided contigs, to be written to FASTA file (e.g. oneidensis, coli, etc.). "
@@ -490,296 +492,417 @@ if args.fa:
     print("SprayNPray will write a FASTA file with contigs matching user-specified metrics: " + args.out + "-contigs.fa")
     print("SprayNPray will write a FASTA file with contigs not matching user-specified metrics: " + args.out + "-unmatched.contigs.fa\n")
     if args.species != "NA":
-        if "NA" in [args.Genus, args.Class, args.Phylum, args.Domain]:
+        if "NA" in [args.genus, args.Class, args.phylum, args.domain]:
             print("If species name is provided, please provide also the Genus, Class, Phylum, and Domain names")
             raise SystemExit
         else:
             print("species restriction: " + args.species)
 
-    if args.Genus != "NA":
-        if "NA" in [args.Class, args.Phylum, args.Domain]:
+    if args.genus != "NA":
+        if "NA" in [args.Class, args.phylum, args.domain]:
             print("If Genus name is provided, please provide also the Class, Phylum, and Domain names")
             raise SystemExit
         else:
-            print("Genus restriction: " + args.Genus)
+            print("Genus restriction: " + args.genus)
 
     if args.Class != "NA":
-        if "NA" in [args.Phylum, args.Domain]:
+        if "NA" in [args.phylum, args.domain]:
             print("If Class name is provided, please provide also the Phylum and Domain names")
             raise SystemExit
         else:
             print("Class restriction: " + args.Class)
 
-    if args.Phylum != "NA":
-        if "NA" in [args.Domain]:
+    if args.phylum != "NA":
+        if "NA" in [args.domain]:
             print("If Phylum name is provided, please provide also the Domain name")
             raise SystemExit
         else:
-            print("Phylum restriction: " + args.Phylum)
+            print("Phylum restriction: " + args.phylum)
 
-    if args.Domain:
-        print("Domain restriction: " + args.Domain)
+    if args.domain:
+        print("Domain restriction: " + args.domain)
 
 
-if args.o != "NA":
-    file = open(args.o)
-    file = fasta2(file)
+# if args.o != "NA":
+#     file = open(args.o)
+#     file = fasta2(file)
+#     if args.makedb:
+#         print("Running DIAMOND: making DIAMOND database")
+#         os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
+#
+#     print("Running DIAMOND BLAST")
+#     os.system(
+#         "diamond blastp --db %s.dmnd --query %s-proteins.faa "
+#             "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
+#             "--out %s.blast --max-target-seqs 50 --evalue 1E-15 --threads %d --query-cover 50 --subject-cover 50"
+#         % (args.ref, args.o, args.o, args.t))
+#
+#     print("Preparing summary: %s" % args.out)
+#
+#     aaiDict = defaultdict(list)
+#     blastDict = defaultdict(list)
+#     blast = open("%s.blast" % args.o)
+#     for i in blast:
+#         ls = i.rstrip().split("\t")
+#         orf = ls[0]
+#         name = (ls[12])
+#         name = name.split("]")[0]
+#         name = name.split("[")[1]
+#         blastDict[orf].append(name)
+#         aai = ls[2]
+#         aaiDict[orf].append(float(aai))
+#
+#     out = open(args.out, "w")
+#     out.write(
+#         "ORF" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
+#     for i in file.keys():
+#
+#         hitsList = blastDict[i]
+#         try:
+#             AAI = statistics.mean(aaiDict[i])
+#         except statistics.StatisticsError:
+#             AAI = "NA"
+#         out.write(
+#             i + "," + str(AAI) + ",")
+#
+#         for j in hitsList:
+#             try:
+#                 out.write(j + "; ")
+#             except TypeError:
+#                 pass
+#         out.write("\n")
+#
+#     print("Finished!")
+
+
+file = open(args.g)
+file = fasta2(file)
+total = 0
+for i in file.keys():
+    total += len(file[i])
+
+if total < 20000:
+    if args.meta:
+        pass
+    else:
+        print("looks like there are less than 20000 characters in your provided sequences file. Please re-run the script with the --meta flag")
+        raise SystemExit
+
+if args.blast == "NA":
+
+    print("Running Prodigal: calling ORFs from provided contigs")
+    if args.meta:
+        os.system("prodigal -i %s -a %s-proteins.faa -p meta" % (args.g, args.g))
+    else:
+        os.system("prodigal -i %s -a %s-proteins.faa" % (args.g, args.g))
+
     if args.makedb:
-        print("Running DIAMOND: making DIAMOND database")
+        print("Running Diamond: making DIAMOND BLAST database")
         os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
 
-    print("Running DIAMOND BLAST")
+
+    print("Running Diamond BLAST")
     os.system(
         "diamond blastp --db %s.dmnd --query %s-proteins.faa "
-            "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
-            "--out %s.blast --max-target-seqs 50 --evalue 1E-15 --threads %d --query-cover 50 --subject-cover 50"
-        % (args.ref, args.o, args.o, args.t))
+        "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
+        "--out %s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50"
+        % (args.ref, args.g, args.g, args.hits, args.t))
 
-    print("Preparing summary: %s" % args.out)
+    blastFile = "%s.blast" % args.g
+else:
+    blastFile = args.blast
 
-    aaiDict = defaultdict(list)
-    blastDict = defaultdict(list)
-    blast = open("%s.blast" % args.o)
-    for i in blast:
-        ls = i.rstrip().split("\t")
-        orf = ls[0]
-        name = (ls[12])
+out = open(args.out + "-top%s.csv" % args.hits)
+out.write("orf,taxa,top_hit\n")
+blast = open(blastFile)
+for i in blast:
+    ls = i.rstrip().split("\t")
+    try:
+        name = (ls[12].split("[")[1])
+        name = name[0:len(name) - 1]
+        out.write(ls[0] + "," + replace(name, [","], ";") + "," + replace(ls[12], [","], ";") + "\n")
+    except IndexError:
+        pass
+
+if args.bam != "NA":
+    print("Extracting coverage information from the provided BAM files")
+    os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s" % (args.g, args.bam))
+
+print("Calculating GC-content")
+gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+GC = 0
+total = 0
+for i in file.keys():
+    seq = file[i]
+    total += len(seq)
+    gc = 0
+    for bp in seq:
+        if bp == "C" or bp == "G":
+            GC += 1
+            gc += 1
+    gcDict[i] = str( float(gc/len(seq)) * 100 )
+
+print("Preparing summary: %s" % args.out)
+
+aaiDict = defaultdict(list)
+blastDict = defaultdict(list)
+redunDict = defaultdict(list)
+blast = open(blastFile)
+for i in blast:
+    ls = i.rstrip().split("\t")
+    contig = allButTheLast(ls[0], "_")
+    name = ls[12]
+    try:
         name = name.split("]")[0]
         name = name.split("[")[1]
-        blastDict[orf].append(name)
-        aai = ls[2]
-        aaiDict[orf].append(float(aai))
+    except IndexError:
+        name = "NA"
+    aai = ls[2]
+    if ls[0] not in redunDict.keys():
+        redunDict[ls[0]].append(name)
+        blastDict[contig].append(name)
+        aaiDict[contig].append(float(aai))
 
-    out = open(args.out, "w")
-    out.write(
-        "ORF" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
-    for i in file.keys():
+if args.bam != "NA":
+    depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    depth = open("%s.depth" % args.g)
+    for i in depth:
+        ls = i.rstrip().split("\t")
+        if ls[1] != "contigLen":
+            depthDict[ls[0]]["length"] = int(ls[1])
+            depthDict[ls[0]]["depth"] = ls[2]
 
-        hitsList = blastDict[i]
+# reading silva headers
+silvaDict = defaultdict(lambda: defaultdict(lambda: 'unclassified'))
+silva = open(silvaFile)
+for i in silva:
+    ls = i.rstrip().split("\t")
+    if ls[0] != "primaryAccession":
+
+        Domain = (ls[3].split(";")[0])
+        Phylum = (ls[3].split(";")[1])
+        if Phylum == "":
+            Phylum = Domain
+
         try:
-            AAI = statistics.mean(aaiDict[i])
-        except statistics.StatisticsError:
-            AAI = "NA"
-        out.write(
-            i + "," + str(AAI) + ",")
+            Class = (ls[3].split(";")[2])
+        except IndexError:
+            Class = (ls[3].split(";")[0])
 
+        if Domain in ["Bacteria", "Archaea"]:
+            Genus = lastItem(ls[3].split(";"))
+
+            if Genus == "Oikopleura":
+                Domain = "Eukaryota"
+            if Genus == "Diplosphaera":
+                Domain = "Eukaryota"
+            if Genus == "Planococcus":
+                Domain = "Eukaryota"
+
+        elif Domain in ["Eukaryota"]:
+            Genus = ls[4].split(" ")[0]
+
+            if lastItem(ls[3].split(";")) == "Chloroplast":
+                Genus = "Chloroplast" + "_" + ls[4].split(" ")[0]
+
+            if lastItem(ls[3].split(";")) == "Mitochondria":
+                Genus = "Mitochondria" + "_" + ls[4].split(" ")[0]
+
+            if Genus == "uncultured":
+                Genus = "uncultured_" + lastItem(ls[3].split(";"))
+
+            if Genus == "Labrys":
+                Domain = "Bacteria"
+            if Genus == "Halofilum":
+                Domain = "Bacteria"
+            if Genus == "Bacillus":
+                Domain = "Bacteria"
+            if Genus == "Lactobacillus":
+                Domain = "Bacteria"
+            if Genus == "Pseudomonas":
+                Domain = "Bacteria"
+            if Genus == "Arthrobacter":
+                Domain = "Bacteria"
+            if Genus == "Paracoccus":
+                Domain = "Bacteria"
+            if Genus == "Ensifer":
+                Domain = "Bacteria"
+            if Genus == "Arthrobacter":
+                Domain = "Bacteria"
+            if Genus == "Aeromonas":
+                Domain = "Bacteria"
+            if Genus == "Acinetobacter":
+                Domain = "Bacteria"
+            if Genus == "Edwardsiella":
+                Domain = "Bacteria"
+            if Genus == "Mesorhizobium":
+                Domain = "Bacteria"
+            if Genus == "Kitasatospora":
+                Domain = "Bacteria"
+            if Genus == "Clostridium":
+                Domain = "Bacteria"
+            if Genus == "Rhodocista":
+                Domain = "Bacteria"
+            if Genus == "Actinomyces":
+                Domain = "Bacteria"
+
+        silvaDict[Genus]["Domain"] = Domain
+        silvaDict[Genus]["Phylum"] = Phylum
+        silvaDict[Genus]["Class"] = Class
+        silvaDict[Genus]["Genus"] = Genus
+
+        silvaDict[Class]["Phylum"] = Phylum
+        silvaDict[Class]["Domain"] = Domain
+        silvaDict[Class]["Class"] = Class
+
+        silvaDict[Phylum]["Phylum"] = Phylum
+        silvaDict[Phylum]["Domain"] = Domain
+
+        silvaDict[Domain]["Domain"] = Domain
+
+out = open(args.out + ".csv", "w")
+out.write("contig" + "," + "contig_length" + "," + "hits_per_kb" + "," + "cov" + "," + "GC-content" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
+for i in file.keys():
+    if args.bam != "NA":
+        depth = depthDict[i]["depth"]
+        length = depthDict[i]["length"]
+    elif args.spades:
+        depth = lastItem(i.split("_"))
+        length = len(file[i])
+    else:
+        depth = "Unknown"
+        length = len(file[i])
+    gc = gcDict[i]
+    hitsList = blastDict[i]
+    try:
+        AAI = statistics.mean(aaiDict[i])
+    except statistics.StatisticsError:
+        AAI = "NA"
+    out.write(i + "," + str(length) + "," + str(len(hitsList) / (length / 1000)) + "," + str(depth) + "," + str(gc) + "," + str(AAI) + ",")
+
+    if args.lvl == "NA":
         for j in hitsList:
             try:
                 out.write(j + "; ")
             except TypeError:
                 pass
-        out.write("\n")
-
-    print("Finished!")
-
-
-else:
-
-    file = open(args.g)
-    file = fasta2(file)
-    total = 0
-    for i in file.keys():
-        total += len(file[i])
-
-    if total < 20000:
-        if args.meta:
-            pass
-        else:
-            print("looks like there are less than 20000 characters in your provided sequences file. Please re-run the script with the --meta flag")
-            raise SystemExit
-
-    if args.blast == "NA":
-
-        print("Running Prodigal: calling ORFs from provided contigs")
-        if args.meta:
-            os.system("prodigal -i %s -a %s-proteins.faa -p meta" % (args.g, args.g))
-        else:
-            os.system("prodigal -i %s -a %s-proteins.faa" % (args.g, args.g))
-
-        if args.makedb:
-            print("Running Diamond: making DIAMOND BLAST database")
-            os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
-
-
-        print("Running Diamond BLAST")
-        os.system(
-            "diamond blastp --db %s.dmnd --query %s-proteins.faa "
-            "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
-            "--out %s.blast --max-target-seqs 50 --evalue 1E-15 --threads %d --query-cover 50 --subject-cover 50"
-            % (args.ref, args.g, args.g, args.t))
-
-        blastFile = "%s.blast" % args.g
     else:
-        blastFile = args.blast
-
-    if args.bam != "NA":
-        print("Extracting coverage information from the provided BAM files")
-        os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s" % (args.g, args.bam))
-
-    print("Calculating GC-content")
-    gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-    GC = 0
-    total = 0
-    for i in file.keys():
-        seq = file[i]
-        total += len(seq)
-        gc = 0
-        for bp in seq:
-            if bp == "C" or bp == "G":
-                GC += 1
-                gc += 1
-        gcDict[i] = str( float(gc/len(seq)) * 100 )
-
-    print("Preparing summary: %s" % args.out)
-
-    aaiDict = defaultdict(list)
-    blastDict = defaultdict(list)
-    redunDict = defaultdict(list)
-    blast = open(blastFile)
-    for i in blast:
-        ls = i.rstrip().split("\t")
-        contig = allButTheLast(ls[0], "_")
-        name = ls[12]
-        try:
-            name = name.split("]")[0]
-            name = name.split("[")[1]
-        except IndexError:
-            name = "NA"
-        aai = ls[2]
-        if ls[0] not in redunDict.keys():
-            redunDict[ls[0]].append(name)
-            blastDict[contig].append(name)
-            aaiDict[contig].append(float(aai))
-
-    if args.bam != "NA":
-        depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-        depth = open("%s.depth" % args.g)
-        for i in depth:
-            ls = i.rstrip().split("\t")
-            if ls[1] != "contigLen":
-                depthDict[ls[0]]["length"] = int(ls[1])
-                depthDict[ls[0]]["depth"] = ls[2]
-
-    # reading silva headers
-    silvaDict = defaultdict(lambda: defaultdict(lambda: 'unclassified'))
-    silva = open(silvaFile)
-    for i in silva:
-        ls = i.rstrip().split("\t")
-        if ls[0] != "primaryAccession":
-
-            Domain = (ls[3].split(";")[0])
-            Phylum = (ls[3].split(";")[1])
-            if Phylum == "":
-                Phylum = Domain
-
+        for j in hitsList:
             try:
-                Class = (ls[3].split(";")[2])
-            except IndexError:
-                Class = (ls[3].split(";")[0])
+                Genus = j.split(" ")[0]
+                if Genus in ["Candidatus", "uncultured"]:
+                    Genus = j.split(" ")[1]
 
-            if Domain in ["Bacteria", "Archaea"]:
-                Genus = lastItem(ls[3].split(";"))
-
-                if Genus == "Oikopleura":
-                    Domain = "Eukaryota"
-                if Genus == "Diplosphaera":
-                    Domain = "Eukaryota"
-                if Genus == "Planococcus":
-                    Domain = "Eukaryota"
-
-            elif Domain in ["Eukaryota"]:
-                Genus = ls[4].split(" ")[0]
-
-                if lastItem(ls[3].split(";")) == "Chloroplast":
-                    Genus = "Chloroplast" + "_" + ls[4].split(" ")[0]
-
-                if lastItem(ls[3].split(";")) == "Mitochondria":
-                    Genus = "Mitochondria" + "_" + ls[4].split(" ")[0]
-
-                if Genus == "uncultured":
-                    Genus = "uncultured_" + lastItem(ls[3].split(";"))
-
-                if Genus == "Labrys":
-                    Domain = "Bacteria"
-                if Genus == "Halofilum":
-                    Domain = "Bacteria"
-                if Genus == "Bacillus":
-                    Domain = "Bacteria"
-                if Genus == "Lactobacillus":
-                    Domain = "Bacteria"
-                if Genus == "Pseudomonas":
-                    Domain = "Bacteria"
-                if Genus == "Arthrobacter":
-                    Domain = "Bacteria"
-                if Genus == "Paracoccus":
-                    Domain = "Bacteria"
-                if Genus == "Ensifer":
-                    Domain = "Bacteria"
-                if Genus == "Arthrobacter":
-                    Domain = "Bacteria"
-                if Genus == "Aeromonas":
-                    Domain = "Bacteria"
-                if Genus == "Acinetobacter":
-                    Domain = "Bacteria"
-                if Genus == "Edwardsiella":
-                    Domain = "Bacteria"
-                if Genus == "Mesorhizobium":
-                    Domain = "Bacteria"
-                if Genus == "Kitasatospora":
-                    Domain = "Bacteria"
-                if Genus == "Clostridium":
-                    Domain = "Bacteria"
-                if Genus == "Rhodocista":
-                    Domain = "Bacteria"
-                if Genus == "Actinomyces":
-                    Domain = "Bacteria"
-
-            silvaDict[Genus]["Domain"] = Domain
-            silvaDict[Genus]["Phylum"] = Phylum
-            silvaDict[Genus]["Class"] = Class
-            silvaDict[Genus]["Genus"] = Genus
-
-            silvaDict[Class]["Phylum"] = Phylum
-            silvaDict[Class]["Domain"] = Domain
-            silvaDict[Class]["Class"] = Class
-
-            silvaDict[Phylum]["Phylum"] = Phylum
-            silvaDict[Phylum]["Domain"] = Domain
-
-            silvaDict[Domain]["Domain"] = Domain
-
-    out = open(args.out + ".csv", "w")
-    out.write("contig" + "," + "contig_length" + "," + "hits_per_contig" + "," + "cov" + "," + "GC-content" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
-    for i in file.keys():
-        if args.bam != "NA":
-            depth = depthDict[i]["depth"]
-            length = depthDict[i]["length"]
-        elif args.spades:
-            depth = lastItem(i.split("_"))
-            length = len(file[i])
-        else:
-            depth = "Unknown"
-            length = len(file[i])
-        gc = gcDict[i]
-        hitsList = blastDict[i]
-        try:
-            AAI = statistics.mean(aaiDict[i])
-        except statistics.StatisticsError:
-            AAI = "NA"
-        out.write(i + "," + str(length) + "," + str(len(hitsList) / (length / 1000)) + "," + str(depth) + "," + str(gc) + "," + str(AAI) + ",")
-
-        if args.lvl == "NA":
-            for j in hitsList:
                 try:
-                    out.write(j + "; ")
-                except TypeError:
-                    pass
-        else:
-            for j in hitsList:
-                try:
+                    species = j.split(" ")[1]
+                    if species == "sp.":
+                        species = j.split(" ")[2]
+                except IndexError:
+                    species = "unclassified"
+
+                Domain = silvaDict[Genus]["Domain"]
+                Phylum = silvaDict[Genus]["Phylum"]
+                Class = silvaDict[Genus]["Class"]
+
+                if len(silvaDict[Genus]) == 0:
+                    Domain = "unclassifed"
+                    Phylum = "unclassifed"
+                    Class = "unclassifed"
+
+                if re.findall(r'symbiont', j):
+                    Domain = j
+                    Phylum = j
+                    Class = j
+
+                if args.lvl == "Domain":
+                    out.write(Domain + "; ")
+
+                elif args.lvl == "Phylum":
+                    out.write(Phylum + "; ")
+
+                elif args.lvl == "Class":
+                    out.write(Class + "; ")
+
+                elif args.lvl == "Genus":
+                    out.write(Genus + "; ")
+
+                elif args.lvl == "species":
+                    out.write(species + "; ")
+
+                else:
+                    break
+
+            except TypeError:
+                pass
+
+    out.write("\n")
+out.close()
+
+####  WRITING FILE FOR WORD-CLOUD GENERATION
+out = open(args.out + ".words.csv", "w")
+summary = open(args.out + ".csv")
+for i in summary:
+    ls = i.rstrip().split(",")
+    if ls[6] != "closest_blast_hits":
+        ls2 = (ls[6].split("; "))
+        for j in ls2:
+            if (j.split(" ")[0]) == "Candidatus":
+                word = (j.split(" ")[1])
+            else:
+                word = (j.split(" ")[0])
+            out.write(word + "\n")
+out.close()
+
+os.system("echo ${rscripts} > r.txt")
+file = open("r.txt")
+for i in file:
+    Rdir = (i.rstrip())
+os.system("rm r.txt")
+print(Rdir)
+
+try:
+    test = open(Rdir + "/wordcloud.R")
+    print("pass\n")
+except:
+    print("fail")
+    os.system("which spray-and-pray.py > r.txt")
+    for i in file:
+        Rdir = (i.rstrip())
+    Rdir = allButTheLast(Rdir, "/")
+    print(Rdir)
+    os.system("rm r.txt")
+
+os.system("Rscript --vanilla %s/wordcloud.R %s/.words.csv %s.words.tiff" % (Rdir, args.out, args.out))
+
+if args.fa:
+    summary = open(args.out + ".csv")
+    out = open(args.out + '-contigs.fa', "w")
+    out2 = open(args.out + '-unmatched.contigs.fa', "w")
+
+    for i in summary:
+        ls = i.rstrip().split(",")
+
+        if ls[1] != "contig_length":
+            length = float(ls[1])
+            hitsperkb = float(ls[2])
+            gc = float(ls[4])
+            try:
+                aai = float(ls[5])
+            except ValueError:
+                aai = 100
+
+            if ls[3] != "Unknown":
+                cov = float(ls[3])
+            else:
+                cov = 0
+
+            if args.domain != "NA":
+                # doing the math
+                hits = ls[6].split("; ")
+                totalHits = len(hits)
+                matches = 0
+                for j in hits:
                     Genus = j.split(" ")[0]
-                    if Genus in ["Candidatus", "uncultured"]:
-                        Genus = j.split(" ")[1]
 
                     try:
                         species = j.split(" ")[1]
@@ -791,178 +914,103 @@ else:
                     Domain = silvaDict[Genus]["Domain"]
                     Phylum = silvaDict[Genus]["Phylum"]
                     Class = silvaDict[Genus]["Class"]
-
-                    if len(silvaDict[Genus]) == 0:
-                        Domain = "unclassifed"
-                        Phylum = "unclassifed"
+                    if len(silvaDict[Genus]) > 0:
+                        domain = "unclassifed"
+                        phylum = "unclassifed"
                         Class = "unclassifed"
 
-                    if re.findall(r'symbiont', j):
-                        Domain = j
-                        Phylum = j
-                        Class = j
-
-                    if args.lvl == "Domain":
-                        out.write(Domain + "; ")
-
-                    elif args.lvl == "Phylum":
-                        out.write(Phylum + "; ")
-
-                    elif args.lvl == "Class":
-                        out.write(Class + "; ")
-
-                    elif args.lvl == "Genus":
-                        out.write(Genus + "; ")
-
-                    elif args.lvl == "species":
-                        out.write(species + "; ")
-
-                    else:
-                        break
-
-                except TypeError:
-                    pass
-
-        out.write("\n")
-    out.close()
-
-    if args.fa:
-        summary = open(args.out)
-        out = open(args.out + '-contigs.fa', "w")
-        out2 = open(args.out + '-unmatched.contigs.fa', "w")
-
-        for i in summary:
-            ls = i.rstrip().split(",")
-
-            if ls[1] != "contig_length":
-                length = float(ls[1])
-                hitsperkb = float(ls[2])
-                gc = float(ls[4])
-                try:
-                    aai = float(ls[5])
-                except ValueError:
-                    aai = 100
-
-                if ls[3] != "Unknown":
-                    cov = float(ls[3])
-                else:
-                    cov = 0
-
-                if args.Domain != "NA":
-                    # doing the math
-                    hits = ls[6].split("; ")
-                    totalHits = len(hits)
-                    matches = 0
-                    for j in hits:
-                        Genus = j.split(" ")[0]
-
-                        try:
-                            species = j.split(" ")[1]
-                            if species == "sp.":
-                                species = j.split(" ")[2]
-                        except IndexError:
-                            species = "unclassified"
-
-                        Domain = silvaDict[Genus]["Domain"]
-                        Phylum = silvaDict[Genus]["Phylum"]
-                        Class = silvaDict[Genus]["Class"]
-                        if len(silvaDict[Genus]) > 0:
-                            domain = "unclassifed"
-                            phylum = "unclassifed"
-                            Class = "unclassifed"
-
-                        if args.Domain != "NA":
-                            if args.Phylum != "NA":
-                                if args.Class != "NA":
-                                    if args.Genus != "NA":
-                                        if args.species != "NA":
-                                            if species == args.species:
-                                                matches += 1
-                                        else:
-                                            if Genus == args.Genus:
-                                                matches += 1
+                    if args.domain != "NA":
+                        if args.phylum != "NA":
+                            if args.Class != "NA":
+                                if args.genus != "NA":
+                                    if args.species != "NA":
+                                        if species == args.species:
+                                            matches += 1
                                     else:
-                                        if Class == args.Class:
+                                        if Genus == args.genus:
                                             matches += 1
                                 else:
-                                    if Phylum == args.Phylum:
+                                    if Class == args.Class:
                                         matches += 1
                             else:
-                                if Domain == args.Domain:
+                                if Phylum == args.phylum:
                                     matches += 1
                         else:
-                            matches += 1
+                            if Domain == args.domain:
+                                matches += 1
+                    else:
+                        matches += 1
 
-                    perc = (matches / totalHits) * 100
+                perc = (matches / totalHits) * 100
 
-                else:
-                    perc = 100
+            else:
+                perc = 100
 
-                if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and cov >= args.cov and cov <= args.COV and aai >= args.aai:
-                    out.write(">" + ls[0] + "\n")
-                    out.write(file[ls[0]] + "\n")
-                else:
-                    out2.write(">" + ls[0] + "\n")
-                    out2.write(file[ls[0]] + "\n")
+            if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and cov >= args.cov and cov <= args.COV and aai >= args.aai:
+                out.write(">" + ls[0] + "\n")
+                out.write(file[ls[0]] + "\n")
+            else:
+                out2.write(">" + ls[0] + "\n")
+                out2.write(file[ls[0]] + "\n")
 
-        out.close()
+    out.close()
 
-    if args.hgt:
-        summaryDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-        summary = open(args.out + ".csv")
-        for i in summary:
-            ls = i.rstrip().split(",")
-            if ls[2] != "hits_per_contig":
-                counter = 0
-                for j in ls[6].split("; "):
-                    if re.findall(r'Bacteria', j):
-                        counter += 1
+if args.hgt:
+    summaryDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    summary = open(args.out + ".csv")
+    for i in summary:
+        ls = i.rstrip().split(",")
+        if ls[2] != "hits_per_contig":
+            counter = 0
+            for j in ls[6].split("; "):
+                if re.findall(r'Bacteria', j):
+                    counter += 1
 
-                if counter > -1:
-                    if float(ls[2]) < 0.25:
-                        summaryDict[ls[0]] = ls
+            if counter > -1:
+                if float(ls[2]) < 0.25:
+                    summaryDict[ls[0]] = ls
 
-        prots = open("%s-proteins.faa" % args.g)
-        prots = fasta2(prots)
+    prots = open("%s-proteins.faa" % args.g)
+    prots = fasta2(prots)
 
-        outSeq = open("%s.hgt.fasta" % args.out, "w")
-        out = open("%s.hgt.csv" % args.out, "w")
-        out.write("contig,orf,blastHit,seq\n")
-        blastDict = defaultdict(lambda: defaultdict(list))
-        blast = open(blastFile)
-        for i in blast:
-            ls = i.rstrip().split("\t")
-            contig = allButTheLast(ls[0], "_")
-            if contig in summaryDict.keys():
-                try:
-                    name = (ls[12].split("[")[1])
-                    name = name[0:len(name) - 1]
-                    Genus = (name.split(" ")[0])
-                    Domain = (silvaDict[Genus]["Domain"])
-                    blastDict[ls[0]][Domain].append(replace(ls[12], [","], ";"))
+    outSeq = open("%s.hgt.fasta" % args.out, "w")
+    out = open("%s.hgt.csv" % args.out, "w")
+    out.write("contig,orf,blastHit,seq\n")
+    blastDict = defaultdict(lambda: defaultdict(list))
+    blast = open(blastFile)
+    for i in blast:
+        ls = i.rstrip().split("\t")
+        contig = allButTheLast(ls[0], "_")
+        if contig in summaryDict.keys():
+            try:
+                name = (ls[12].split("[")[1])
+                name = name[0:len(name) - 1]
+                Genus = (name.split(" ")[0])
+                Domain = (silvaDict[Genus]["Domain"])
+                blastDict[ls[0]][Domain].append(replace(ls[12], [","], ";"))
 
-                    # if Domain == "Bacteria":
-                    #     outSeq.write(">" + ls[0] + "\n")
-                    #     outSeq.write(prots[ls[0]] + "\n")
-                    #     out.write(
-                    #         contig + "," + ls[0] + "," + str(replace(ls[12], [","], ";")) + "," + prots[ls[0]] + "\n")
+                # if Domain == "Bacteria":
+                #     outSeq.write(">" + ls[0] + "\n")
+                #     outSeq.write(prots[ls[0]] + "\n")
+                #     out.write(
+                #         contig + "," + ls[0] + "," + str(replace(ls[12], [","], ";")) + "," + prots[ls[0]] + "\n")
 
-                except IndexError:
-                    pass
+            except IndexError:
+                pass
 
-        for i in blastDict.keys():
-            Bacteria = blastDict[i]["Bacteria"]
-            Eukaryota = blastDict[i]["Eukaryota"]
-            if len(Bacteria) > len(Eukaryota):
-                contig = allButTheLast(i, "_")
-                outSeq.write(">" + i + "\n")
-                outSeq.write(prots[i] + "\n")
-                out.write(contig + "," + i + "," + str(Bacteria[0]) + "," + prots[i] + "\n")
+    for i in blastDict.keys():
+        Bacteria = blastDict[i]["Bacteria"]
+        Eukaryota = blastDict[i]["Eukaryota"]
+        if len(Bacteria) > len(Eukaryota):
+            contig = allButTheLast(i, "_")
+            outSeq.write(">" + i + "\n")
+            outSeq.write(prots[i] + "\n")
+            out.write(contig + "," + i + "," + str(Bacteria[0]) + "," + prots[i] + "\n")
 
-        outSeq.close()
-        out.close()
+    outSeq.close()
+    out.close()
 
-    print("Finished!")
+print("Finished!")
 
 
 
