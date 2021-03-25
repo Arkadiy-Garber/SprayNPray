@@ -4,7 +4,7 @@ import re
 import os
 import textwrap
 import argparse
-import numpy as np
+# import numpy as np
 import sys
 import statistics
 
@@ -182,12 +182,12 @@ def GCcalc(seq):
     return count/len(seq)
 
 
-def reject_outliers(data):
-    m = 2
-    u = np.mean(data)
-    s = np.std(data)
-    filtered = [e for e in data if (u - 2 * s < e < u + 2 * s)]
-    return filtered
+# def reject_outliers(data):
+#     m = 2
+#     u = np.mean(data)
+#     s = np.std(data)
+#     filtered = [e for e in data if (u - 2 * s < e < u + 2 * s)]
+#     return filtered
 
 
 def lastItem(ls):
@@ -419,7 +419,7 @@ parser.add_argument('--fa', type=str, help="write subset of contigs that match u
 
 parser.add_argument('-blast', type=str, help="DIAMOND BLAST output file from previous run", default="NA")
 
-parser.add_argument('-hits', type=str, help="total number of DIAMOND hits to report in DIAMOND output file", default="NA")
+parser.add_argument('-hits', type=str, help="total number of DIAMOND hits to report in DIAMOND output file (default=100)", default="100")
 
 parser.add_argument('-domain', type=str, help="domain expected among hits to provided contigs, to be written to FASTA file (e.g. Bacteria, Archaea, Eukaryota)", default="NA")
 
@@ -488,9 +488,15 @@ location = allButTheLast(location, "/")
 silvaFile = location + "/taxmap_slv_ssu_ref_nr_138.1.txt"
 os.system("rm mainDir.txt")
 
+if args.out == "NA":
+    genome = args.g
+    outfilename = allButTheLast(genome, ".") + ".spraynpray"
+else:
+    outfilename = args.out
+
 if args.fa:
-    print("SprayNPray will write a FASTA file with contigs matching user-specified metrics: " + args.out + "-contigs.fa")
-    print("SprayNPray will write a FASTA file with contigs not matching user-specified metrics: " + args.out + "-unmatched.contigs.fa\n")
+    print("SprayNPray will write a FASTA file with contigs matching user-specified metrics: " + outfilename + "-contigs.fa")
+    print("SprayNPray will write a FASTA file with contigs not matching user-specified metrics: " + outfilename + "-unmatched.contigs.fa\n")
     if args.species != "NA":
         if "NA" in [args.genus, args.Class, args.phylum, args.domain]:
             print("If species name is provided, please provide also the Genus, Class, Phylum, and Domain names")
@@ -612,7 +618,7 @@ if args.blast == "NA":
 else:
     blastFile = args.blast
 
-out = open(args.out + "-top%s.csv" % args.hits)
+out = open(outfilename + "-top%s.csv" % args.hits, "w")
 out.write("orf,taxa,top_hit\n")
 blast = open(blastFile)
 for i in blast:
@@ -642,7 +648,7 @@ for i in file.keys():
             gc += 1
     gcDict[i] = str( float(gc/len(seq)) * 100 )
 
-print("Preparing summary: %s" % args.out)
+print("Preparing summary: %s" % outfilename)
 
 aaiDict = defaultdict(list)
 blastDict = defaultdict(list)
@@ -760,7 +766,7 @@ for i in silva:
 
         silvaDict[Domain]["Domain"] = Domain
 
-out = open(args.out + ".csv", "w")
+out = open(outfilename + ".csv", "w")
 out.write("contig" + "," + "contig_length" + "," + "hits_per_kb" + "," + "cov" + "," + "GC-content" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
 for i in file.keys():
     if args.bam != "NA":
@@ -839,8 +845,8 @@ for i in file.keys():
 out.close()
 
 ####  WRITING FILE FOR WORD-CLOUD GENERATION
-out = open(args.out + ".words.csv", "w")
-summary = open(args.out + ".csv")
+out = open(outfilename + ".words.csv", "w")
+summary = open(outfilename + ".csv")
 for i in summary:
     ls = i.rstrip().split(",")
     if ls[6] != "closest_blast_hits":
@@ -872,12 +878,12 @@ except:
     print(Rdir)
     os.system("rm r.txt")
 
-os.system("Rscript --vanilla %s/wordcloud.R %s/.words.csv %s.words.tiff" % (Rdir, args.out, args.out))
+os.system("Rscript --vanilla %s/wordcloud.R %s.words.csv %s.words.tiff" % (Rdir, outfilename, outfilename))
 
 if args.fa:
-    summary = open(args.out + ".csv")
-    out = open(args.out + '-contigs.fa', "w")
-    out2 = open(args.out + '-unmatched.contigs.fa', "w")
+    summary = open(outfilename + ".csv")
+    out = open(outfilename + '-contigs.fa', "w")
+    out2 = open(outfilename + '-unmatched.contigs.fa', "w")
 
     for i in summary:
         ls = i.rstrip().split(",")
@@ -957,7 +963,7 @@ if args.fa:
 
 if args.hgt:
     summaryDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-    summary = open(args.out + ".csv")
+    summary = open(outfilename + ".csv")
     for i in summary:
         ls = i.rstrip().split(",")
         if ls[2] != "hits_per_contig":
@@ -973,8 +979,8 @@ if args.hgt:
     prots = open("%s-proteins.faa" % args.g)
     prots = fasta2(prots)
 
-    outSeq = open("%s.hgt.fasta" % args.out, "w")
-    out = open("%s.hgt.csv" % args.out, "w")
+    outSeq = open("%s.hgt.fasta" % outfilename, "w")
+    out = open("%s.hgt.csv" % outfilename, "w")
     out.write("contig,orf,blastHit,seq\n")
     blastDict = defaultdict(lambda: defaultdict(list))
     blast = open(blastFile)
