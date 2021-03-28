@@ -856,7 +856,8 @@ for i in summary:
                 word = (j.split(" ")[1])
             else:
                 word = (j.split(" ")[0])
-            out.write(word + "\n")
+            if word != "unclassifed":
+                out.write(word + "\n")
 out.close()
 
 os.system("echo ${rscripts} > r.txt")
