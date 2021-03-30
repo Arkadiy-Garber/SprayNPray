@@ -618,6 +618,7 @@ if args.blast == "NA":
 else:
     blastFile = args.blast
 
+
 out = open(outfilename + "-top%s.csv" % args.hits, "w")
 out.write("orf,taxa,top_hit\n")
 blast = open(blastFile)
@@ -844,20 +845,31 @@ for i in file.keys():
     out.write("\n")
 out.close()
 
-####  WRITING FILE FOR WORD-CLOUD GENERATION
+
+############## WORDCLOUD LOOP ####################
 out = open(outfilename + ".words.csv", "w")
 summary = open(outfilename + ".csv")
 for i in summary:
     ls = i.rstrip().split(",")
     if ls[6] != "closest_blast_hits":
         ls2 = (ls[6].split("; "))
+        contig = ls[0]
         for j in ls2:
             if (j.split(" ")[0]) == "Candidatus":
                 word = (j.split(" ")[1])
             else:
                 word = (j.split(" ")[0])
-            if word != "unclassifed":
-                out.write(word + "\n")
+
+            if args.bam != "NA":
+                cov = int(round(float(ls[3])))
+
+                for k in range(0, cov):
+                    if not re.findall(r'unclass', word):
+                        out.write(word + "\n")
+
+            else:
+                if not re.findall(r'unclass', word):
+                    out.write(word + "\n")
 out.close()
 
 os.system("echo ${rscripts} > r.txt")
@@ -880,6 +892,8 @@ except:
     os.system("rm r.txt")
 
 os.system("Rscript --vanilla %s/wordcloud.R %s.words.csv %s.words.tiff" % (Rdir, outfilename, outfilename))
+############## WORDCLOUD LOOP END###################
+
 
 if args.fa:
     summary = open(outfilename + ".csv")
