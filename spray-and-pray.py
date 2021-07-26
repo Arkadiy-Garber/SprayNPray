@@ -4,9 +4,147 @@ import re
 import os
 import textwrap
 import argparse
-# import numpy as np
 import sys
 import statistics
+import numpy as np
+import matplotlib.pyplot as plt
+from collections import defaultdict
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+from sklearn import metrics
+from sklearn.datasets._samples_generator import make_blobs
+from sklearn.cluster import AgglomerativeClustering
+from scipy.cluster.hierarchy import dendrogram, linkage
+
+
+def reject_outliers(data, m):
+    u = np.mean(data)
+    s = np.std(data)
+    filtered = [e for e in data if (u - m * s < e < u + m * s)]
+    return filtered
+
+
+def filter(list, items):
+    outLS = []
+    for i in list:
+        if i not in items:
+            outLS.append(i)
+    return outLS
+
+
+def delim(line):
+    ls = []
+    string = ''
+    for i in line:
+        if i != " ":
+            string += i
+        else:
+            ls.append(string)
+            string = ''
+    ls.append(string)
+    ls = filter(ls, [""])
+    return ls
+
+
+def allButTheLast(iterable, delim):
+    x = ''
+    length = len(iterable.split(delim))
+    for i in range(0, length-1):
+        x += iterable.split(delim)[i]
+        x += delim
+    return x[0:len(x)-1]
+
+
+def ribosome(seq):
+    Dict = defaultdict(lambda: defaultdict(list))
+    NTs = ['T', 'C', 'A', 'G']
+    stopCodons = ['TAA', 'TAG', 'TGA']
+    Codons = []
+    for i in range(4):
+        for j in range(4):
+            for k in range(4):
+                codon = NTs[i] + NTs[j] + NTs[k]
+                # if not codon in stopCodons:
+                Codons.append(codon)
+
+    CodonTable = {}
+    AAz = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"
+    AAs = list(AAz)
+    k = 0
+    for base1 in NTs:
+        for base2 in NTs:
+            for base3 in NTs:
+                codon = base1 + base2 + base3
+                CodonTable[codon] = AAs[k]
+                k += 1
+
+    prot = []
+    for j in range(0, len(seq), 3):
+        codon = seq[j:j + 3]
+        try:
+            prot.append(CodonTable[codon])
+        except KeyError:
+            prot.append("X")
+    protein = ("".join(prot))
+    return protein
+
+
+def codonTable(seq):
+    Dict = defaultdict(lambda: defaultdict(list))
+    NTs = ['T', 'C', 'A', 'G']
+    stopCodons = ['TAA', 'TAG', 'TGA']
+    Codons = []
+    for i in range(4):
+        for j in range(4):
+            for k in range(4):
+                codon = NTs[i] + NTs[j] + NTs[k]
+                # if not codon in stopCodons:
+                Codons.append(codon)
+
+    CodonTable = {}
+    AAz = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"
+    AAs = list(AAz)
+    k = 0
+    for base1 in NTs:
+        for base2 in NTs:
+            for base3 in NTs:
+                codon = base1 + base2 + base3
+                CodonTable[codon] = AAs[k]
+                k += 1
+
+    prot = []
+    for j in range(0, len(seq), 3):
+        codon = seq[j:j + 3]
+        try:
+            Dict[CodonTable[codon]][codon].append(codon)
+            prot.append(CodonTable[codon])
+        except KeyError:
+            prot.append("X")
+    protein = ("".join(prot))
+    return Dict
+
+
+def tet(seq):
+    Dict = defaultdict(list)
+    NTs = ['T', 'C', 'A', 'G']
+    for i in range(4):
+        for j in range(4):
+            for k in range(4):
+                for l in range(4):
+                    if NTs[i] in ["A", "G", "C", "T"] and NTs[j] in ["A", "G", "C", "T"] and NTs[k] in ["A", "G", "C", "T"] and NTs[l] in ["A", "G", "C", "T"]:
+                        tet = NTs[i] + NTs[j] + NTs[k] + NTs[l]
+                        Dict[tet] = []
+
+    totalKmers = 0
+    for m in range(len(seq)):
+        TET = (seq[m:m+4])
+        if len(TET) == 4:
+            if TET[0] in ["A", "G", "C", "T"] and TET[1] in ["A", "G", "C", "T"] and TET[2] in ["A", "G", "C", "T"] and TET[3] in ["A", "G", "C", "T"]:
+                Dict[TET].append(TET)
+                totalKmers += 1
+
+    return Dict, totalKmers
 
 
 def firstNonspace(ls):
@@ -22,6 +160,7 @@ def gc(seq):
         if bp == "C" or bp == "G":
             gc += 1
     return gc/len(seq)
+
 
 
 def Dictparser(Dictionary):
@@ -65,39 +204,6 @@ def Complement(seq):
         out.append(nucleotide)
     outString = "".join(out)
     return outString
-
-
-def ribosome(seq):
-    NTs = ['T', 'C', 'A', 'G']
-    stopCodons = ['TAA', 'TAG', 'TGA']
-    Codons = []
-    for i in range(4):
-        for j in range(4):
-            for k in range(4):
-                codon = NTs[i] + NTs[j] + NTs[k]
-                # if not codon in stopCodons:
-                Codons.append(codon)
-
-    CodonTable = {}
-    AAz = "FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG"
-    AAs = list(AAz)
-    k = 0
-    for base1 in NTs:
-        for base2 in NTs:
-            for base3 in NTs:
-                codon = base1 + base2 + base3
-                CodonTable[codon] = AAs[k]
-                k += 1
-
-    prot = []
-    for j in range(0, len(seq), 3):
-        codon = seq[j:j + 3]
-        try:
-            prot.append(CodonTable[codon])
-        except KeyError:
-            prot.append("X")
-    protein = ("".join(prot))
-    return protein
 
 
 def SeqCoord(seq, start, end):
@@ -182,14 +288,6 @@ def GCcalc(seq):
     return count/len(seq)
 
 
-# def reject_outliers(data):
-#     m = 2
-#     u = np.mean(data)
-#     s = np.std(data)
-#     filtered = [e for e in data if (u - 2 * s < e < u + 2 * s)]
-#     return filtered
-
-
 def lastItem(ls):
     x = ''
     for i in ls:
@@ -207,15 +305,6 @@ def RemoveDuplicates(ls):
         else:
             pass
     return empLS
-
-
-def allButTheLast(iterable, delim):
-    x = ''
-    length = len(iterable.split(delim))
-    for i in range(0, length-1):
-        x += iterable.split(delim)[i]
-        x += delim
-    return x[0:len(x)-1]
 
 
 def secondToLastItem(ls):
@@ -342,14 +431,6 @@ def allButTheFirst(iterable, delim):
     return x[0:len(x)]
 
 
-def filter(list, items):
-    outLS = []
-    for i in list:
-        if i not in items:
-            outLS.append(i)
-    return outLS
-
-
 def filterRe(list, regex):
     ls1 = []
     ls2 = []
@@ -359,19 +440,6 @@ def filterRe(list, regex):
         else:
             ls2.append(i)
     return ls1, ls2
-
-
-def delim(line):
-    ls = []
-    string = ''
-    for i in line:
-        if i != " ":
-            string += i
-        else:
-            ls.append(string)
-            string = ''
-    ls = filter(ls, [""])
-    return ls
 
 
 parser = argparse.ArgumentParser(
@@ -406,6 +474,11 @@ parser.add_argument('--makedb', type=str, help="if the DIAMOND database does not
                                                     "(i.e. file with extension .dmnd), and you would like the program t"
                                                "o run  diamond makedb, provide this flag", const=True, nargs="?")
 
+parser.add_argument('--bin', type=str, help="Including this flag will direct SprayNPray to perform hierarchical "
+                                            "clustering based on 1) tetranucleotide frequency, 2) GC-content, 3) codon usage bias, "
+                                            "and 4) read coverage (if BAM file is provided). SprayNPray will then split the input contigs into multiple FASTA files, "
+                                            "each with its own summary file. This file is incompatible with the --fa flag.", const=True, nargs="?")
+
 parser.add_argument('--spades', type=str, help="is this a SPAdes assembly, with the original SPAdes headers? If so, "
                                                "then you can provide this flag, and BinBlaster will summarize using the coverage "
                                                "information provided in the SPAdes headers", const=True, nargs="?")
@@ -426,7 +499,7 @@ parser.add_argument('-domain', type=str, help="domain expected among hits to pro
 parser.add_argument('-phylum', type=str, help="phylum expected among hits to provided contigs, to be written to FASTA file (e.g. Proteobacteria). "
                                               "If you provide this name, please be sure to also provide the domain name via -domain", default="NA")
 
-parser.add_argument('-class', type=str, help="class name expected among hits to provided contigs, to be written to FASTA file (e.g. Gammaproteobacteria). "
+parser.add_argument('-Class', type=str, help="class name expected among hits to provided contigs, to be written to FASTA file (e.g. Gammaproteobacteria). "
                                              "If you provide this name, please be sure to also provide the domain and phylum names", default="NA")
 
 parser.add_argument('-genus', type=str, help="genus name expected among hits to provided contigs, to be written to FASTA file (e.g. Shewanella). "
@@ -457,7 +530,12 @@ parser.add_argument('-aai', type=float, help="minimum average amino acid identit
 
 # parser.add_argument('-key', type=str, help="Path to the taxmap_slv_ssu_ref_nr_138.1.txt file, which should be in the repository containing this program", default="NA")
 
-args = parser.parse_args()
+if len(sys.argv) == 1:
+    parser.print_help(sys.stderr)
+    sys.exit(0)
+
+args = parser.parse_known_args()[0]
+
 
 print(".")
 # checking paramters:
@@ -491,8 +569,12 @@ os.system("rm mainDir.txt")
 if args.out == "NA":
     genome = args.g
     outfilename = allButTheLast(genome, ".") + ".spraynpray"
+    os.system("mkdir -p %s" % allButTheLast(genome, "."))
+    outdir = allButTheLast(genome, ".")
 else:
     outfilename = args.out
+    os.system("mkdir -p %s" % args.out)
+    outdir = args.out
 
 if args.fa:
     print("SprayNPray will write a FASTA file with contigs matching user-specified metrics: " + outfilename + "-contigs.fa")
@@ -506,21 +588,21 @@ if args.fa:
 
     if args.genus != "NA":
         if "NA" in [args.Class, args.phylum, args.domain]:
-            print("If Genus name is provided, please provide also the Class, Phylum, and Domain names")
+            print("If Genus name is provided, please provide also the Class, phylum, and domain names")
             raise SystemExit
         else:
             print("Genus restriction: " + args.genus)
 
     if args.Class != "NA":
         if "NA" in [args.phylum, args.domain]:
-            print("If Class name is provided, please provide also the Phylum and Domain names")
+            print("If Class name is provided, please provide also the phylum and domain names")
             raise SystemExit
         else:
             print("Class restriction: " + args.Class)
 
     if args.phylum != "NA":
         if "NA" in [args.domain]:
-            print("If Phylum name is provided, please provide also the Domain name")
+            print("If phylum name is provided, please provide also the domain name")
             raise SystemExit
         else:
             print("Phylum restriction: " + args.phylum)
@@ -598,9 +680,9 @@ if args.blast == "NA":
 
     print("Running Prodigal: calling ORFs from provided contigs")
     if args.meta:
-        os.system("prodigal -i %s -a %s-proteins.faa -p meta" % (args.g, args.g))
+        os.system("prodigal -i %s -a %s/%s-proteins.faa -d %s/%s-cds.ffn -p meta" % (args.g, outdir, args.g, outdir, args.g))
     else:
-        os.system("prodigal -i %s -a %s-proteins.faa" % (args.g, args.g))
+        os.system("prodigal -i %s -a %s/%s-proteins.faa -d %s/%s-cds.ffn" % (args.g, outdir, args.g, outdir, args.g))
 
     if args.makedb:
         print("Running Diamond: making DIAMOND BLAST database")
@@ -609,17 +691,17 @@ if args.blast == "NA":
 
     print("Running Diamond BLAST")
     os.system(
-        "diamond blastp --db %s.dmnd --query %s-proteins.faa "
+        "diamond blastp --db %s.dmnd --query %s/%s-proteins.faa "
         "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
-        "--out %s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50"
-        % (args.ref, args.g, args.g, args.hits, args.t))
+        "--out %s/%s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50"
+        % (args.ref, outdir, args.g, outdir, args.g, args.hits, args.t))
 
-    blastFile = "%s.blast" % args.g
+    blastFile = "%s/%s.blast" % (outdir, args.g)
 else:
     blastFile = args.blast
 
 
-out = open(outfilename + "-top%s.csv" % args.hits, "w")
+out = open("%s-top%s.csv" % (outfilename, args.hits), "w")
 out.write("orf,taxa,top_hit\n")
 blast = open(blastFile)
 for i in blast:
@@ -630,6 +712,8 @@ for i in blast:
         out.write(ls[0] + "," + replace(name, [","], ";") + "," + replace(ls[12], [","], ";") + "\n")
     except IndexError:
         pass
+out.close()
+os.system("mv %s-top%s.csv %s/" % (outfilename, args.hits, outdir))
 
 if args.bam != "NA":
     print("Extracting coverage information from the provided BAM files")
@@ -649,7 +733,16 @@ for i in file.keys():
             gc += 1
     gcDict[i] = str( float(gc/len(seq)) * 100 )
 
-print("Preparing summary: %s" % outfilename)
+# print("Calculating tetranucleotide frequency")
+# gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+# GC = 0
+# total = 0
+# for i in file.keys():
+#     seq = file[i]
+#     tet(seq)
+
+
+print("Preparing summary: %s.csv" % outfilename)
 
 aaiDict = defaultdict(list)
 blastDict = defaultdict(list)
@@ -844,11 +937,12 @@ for i in file.keys():
 
     out.write("\n")
 out.close()
+os.system("mv %s.csv %s" % (outfilename, outdir))
 
 
 ############## WORDCLOUD LOOP ####################
 out = open(outfilename + ".words.csv", "w")
-summary = open(outfilename + ".csv")
+summary = open("%s/%s.csv" % (outdir, outfilename))
 for i in summary:
     ls = i.rstrip().split(",")
     if ls[6] != "closest_blast_hits":
@@ -871,37 +965,38 @@ for i in summary:
                 if not re.findall(r'unclass', word):
                     out.write(word + "\n")
 out.close()
+os.system("mv %s.words.csv %s/" % (outfilename, outdir))
 
 os.system("echo ${rscripts} > r.txt")
-file = open("r.txt")
-for i in file:
+Rfile = open("r.txt")
+for i in Rfile:
     Rdir = (i.rstrip())
 os.system("rm r.txt")
 print(Rdir)
 
 try:
     test = open(Rdir + "/wordcloud.R")
-    print("pass\n")
 except:
-    print("fail")
     os.system("which spray-and-pray.py > r.txt")
-    for i in file:
+    Rfile = open("r.txt")
+    for i in Rfile:
         Rdir = (i.rstrip())
     Rdir = allButTheLast(Rdir, "/")
-    print(Rdir)
     os.system("rm r.txt")
 
-os.system("Rscript --vanilla %s/wordcloud.R %s.words.csv %s.words.tiff" % (Rdir, outfilename, outfilename))
-############## WORDCLOUD LOOP END###################
-
+os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff" % (Rdir, outdir, outfilename, outdir, outfilename))
+#################################
 
 if args.fa:
-    summary = open(outfilename + ".csv")
-    out = open(outfilename + '-contigs.fa', "w")
-    out2 = open(outfilename + '-unmatched.contigs.fa', "w")
+    print("Writing contigs based on user-specified metrics")
+    summary = open("%s/%s.csv" % (outdir, outfilename))
+    out = open('%s/%s-contigs.fa' % (outdir, outfilename), "w")
+    out2 = open('%s/%s-unmatched.contigs.fa' % (outdir, outfilename), "w")
 
     for i in summary:
         ls = i.rstrip().split(",")
+        print("")
+        print(i.rstrip())
 
         if ls[1] != "contig_length":
             length = float(ls[1])
@@ -962,6 +1057,7 @@ if args.fa:
                     else:
                         matches += 1
 
+                print(perc)
                 perc = (matches / totalHits) * 100
 
             else:
@@ -977,8 +1073,9 @@ if args.fa:
     out.close()
 
 if args.hgt:
+    print("Looking for HGT candidates")
     summaryDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-    summary = open(outfilename + ".csv")
+    summary = open("%s/%s.csv" % (outdir, outfilename))
     for i in summary:
         ls = i.rstrip().split(",")
         if ls[2] != "hits_per_contig":
@@ -994,8 +1091,8 @@ if args.hgt:
     prots = open("%s-proteins.faa" % args.g)
     prots = fasta2(prots)
 
-    outSeq = open("%s.hgt.fasta" % outfilename, "w")
-    out = open("%s.hgt.csv" % outfilename, "w")
+    outSeq = open("%s/%s.hgt.fasta" % (outdir, outfilename), "w")
+    out = open("%s/%s.hgt.csv" % (outdir, outfilename), "w")
     out.write("contig,orf,blastHit,seq\n")
     blastDict = defaultdict(lambda: defaultdict(list))
     blast = open(blastFile)
@@ -1031,7 +1128,194 @@ if args.hgt:
     outSeq.close()
     out.close()
 
-print("Finished!")
+if args.bin:
+    print("Starting the binning algorithm")
+
+    os.system("echo ${hmms} > wd.txt")
+    WD = open("wd.txt")
+    wd = ''
+    for i in WD:
+        wd = (i.rstrip())
+    os.system("rm wd.txt")
+
+    try:
+        test = open(wd + "/Universal_Hug_et_al.hmm.txt")
+        hmms = wd + "/Universal_Hug_et_al.hmm.txt"
+    except:
+        os.system("which spray-and-pray.py > wd.txt")
+        WD = open("wd.txt")
+        wd = ''
+        for i in WD:
+            wd = (i.rstrip())
+        wd = allButTheLast(wd, "/")
+        hmms = wd + "/Universal_Hug_et_al.hmm.txt"
+        os.system("rm wd.txt")
+
+    cds = open("%s/%s-cds.ffn" % (outdir, args.g))
+    cds = fasta2(cds)
+
+    print("Estimating the number of genomes")
+    os.system("hmmsearch --tblout %s/universal.tblout --cpu %s %s %s/%s-proteins.faa > /dev/null 2>&1" % (outdir, args.t, hmms, outdir, args.g))
+    tblout = open("%s/universal.tblout" % outdir)
+    tbloutDict = defaultdict(list)
+    for i in tblout:
+        if not re.match(r'#', i):
+            ls = delim(i)
+            tbloutDict[ls[2]].append(ls[0])
+
+    hits = []
+    for i in tbloutDict.keys():
+        hits.append(len(tbloutDict[i]))
+
+    filteredHits = reject_outliers(hits, 2)
+    numClusters = round(statistics.mean(filteredHits))
+    print("Predicting " + str(numClusters) + " clusters")
+
+    # ************************************************
+    print("Calculating tetranucleotide frequency")
+    gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    tetDict2 = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    GC = 0
+    total = 0
+    count = 0
+    for i in file.keys():
+        count += 1
+        perc = count/len(file.keys())
+        perc = perc*100
+        sys.stdout.write("calculating: %d%%   \r" % (perc))
+        sys.stdout.flush()
+        seq = file[i]
+        TET = tet(seq)
+        tetDict = TET[0]
+        totalKmers = TET[1]
+        for j in tetDict.keys():
+            tetDict2[i][j] = len(tetDict[j]) / totalKmers
+
+    # ************************************************
+    print("Extracting GC and gene density from summary file")
+    summaryDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    summary = open("%s/%s.csv" % (outdir, outfilename))
+    for i in summary:
+        ls = i.rstrip().split(",")
+        if ls[0] != "contig":
+            summaryDict[ls[0]]["den"] = float(ls[2])
+            summaryDict[ls[0]]["gc"] = float(ls[4])
+
+    # ************************************************
+    print("Calculating codon usage bias")
+    codonDict2 = defaultdict(lambda: defaultdict(lambda: defaultdict(list)))
+    for i in cds.keys():
+        contig = allButTheLast(i, "_")
+        seq = (cds[i])
+        Dict = (codonTable(seq))
+        for j in Dict.keys():
+            for k in Dict[j]:
+                codonDict2[contig][j][k].append(len(Dict[j][k]))
+
+    CodonList = []
+    codonDict3 = defaultdict(lambda: defaultdict(lambda: 0))
+    for i in sorted(codonDict2.keys()):
+        contig = i
+        for j in sorted(codonDict2[i]):
+            localtotal = 0
+            for k in sorted(codonDict2[i][j]):
+                Codons = sum(codonDict2[i][j][k])
+                localtotal += Codons
+
+            for k in sorted(codonDict2[i][j]):
+                Codons = sum(codonDict2[i][j][k])
+                codonDict3[i][k] = Codons / localtotal
+                if k not in CodonList:
+                    CodonList.append(k)
+
+    # ************************************************
+    print("Consolidating")
+    for i in tetDict2.keys():
+        tetDict2[i]["den"] = summaryDict[i]["den"]
+        tetDict2[i]["gc"] = summaryDict[i]["gc"]
+        for j in CodonList:
+            tetDict2[i][j] = codonDict3[i][j]
+        if args.bam != "NA":
+            tetDict2[i]["depth1"] = depthDict[i]["depth"]
+            tetDict2[i]["depth2"] = depthDict[i]["depth"]
+            tetDict2[i]["depth3"] = depthDict[i]["depth"]
+            tetDict2[i]["depth4"] = depthDict[i]["depth"]
+            tetDict2[i]["depth5"] = depthDict[i]["depth"]
+            tetDict2[i]["depth6"] = depthDict[i]["depth"]
+            tetDict2[i]["depth7"] = depthDict[i]["depth"]
+            tetDict2[i]["depth8"] = depthDict[i]["depth"]
+            tetDict2[i]["depth9"] = depthDict[i]["depth"]
+            tetDict2[i]["depth10"] = depthDict[i]["depth"]
+
+    print("Transforming data")
+    tetDict3 = defaultdict(list)
+    for i in tetDict2.keys():
+        for j in tetDict2[i]:
+            tetDict3[i].append(tetDict2[i][j])
+
+    listOfTet = []
+    listOfContigs = []
+    for i in sorted(tetDict3.keys()):
+        listOfContigs.append(i)
+        listOfTet.append(tetDict3[i])
+
+    X = np.array(listOfTet, dtype=float)
+
+    linked = linkage(X, 'single')
+
+    labelList = range(1, len(file.keys()) + 1)
+
+    cluster = AgglomerativeClustering(n_clusters=numClusters, affinity='euclidean', linkage='ward')
+    cluster.fit_predict(X)
+
+    contigClusterDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    clusterDict = defaultdict(list)
+    for i in range(0, len(listOfContigs)):
+        clusterDict[cluster.labels_[i]].append(listOfContigs[i])
+        contigClusterDict[listOfContigs[i]] = cluster.labels_[i]
+
+    header = ''
+    summaryDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    summary = open("%s/%s.csv" % (outdir, outfilename))
+    out = open("%s/%s-wClusters.csv" % (outdir, outfilename), "w")
+    for i in summary:
+        ls = i.rstrip().split(",")
+        if ls[1] != "contig_length":
+            summaryDict[ls[0]] = i.rstrip()
+            out.write(str(contigClusterDict[ls[0]]) + "," + i.rstrip() + '\n')
+
+        else:
+            header = i.rstrip()
+            out.write("cluster," + i.rstrip() + "\n")
+    out.close()
+
+    os.system("mkdir %s/bins" % (outdir))
+    print("Writing predicted clusters to bins")
+    for i in clusterDict.keys():
+        size = 0
+        out = open("%s/bins/cluster_%s.csv" % (outdir, i), "w")
+        out.write(header + "\n")
+        outFASTA = open("%s/bins/cluster_%s.fa" % (outdir, i), "w")
+        for j in clusterDict[i]:
+            out.write(summaryDict[j] + "\n")
+            outFASTA.write(">" + j + "\n")
+            outFASTA.write(file[j] + '\n')
+            size += int(summaryDict[j].split(",")[1])
+        print("cluster_%s.fa: %s Mb" % (i, str(size/1000000)))
+        outFASTA.close()
+        out.close()
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
