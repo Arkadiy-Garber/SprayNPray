@@ -12,13 +12,13 @@ gzip -d taxmap_slv_ssu_ref_nr_138.1.txt.gz
 printf "\n    ${GREEN}Setting up conda environment...${NC}\n\n"
 
 ## adding conda channels
-conda config --add channels defaults 2> /dev/null
-conda config --add channels bioconda 2> /dev/null
-conda config --add channels conda-forge 2> /dev/null
-conda config --add channels au-eoed 2> /dev/null
+# conda config --add channels defaults 2> /dev/null
+# conda config --add channels bioconda 2> /dev/null
+# conda config --add channels conda-forge 2> /dev/null
+# conda config --add channels au-eoed 2> /dev/null
 
 ## creating GToTree environment and installing dependencies
-conda create -n sprayandpray -c r -c bioconda -c anaconda -c conda-forge r-tm r-snowballc r-rcolorbrewer r-xml r-argparse r-wordcloud diamond prodigal metabat2 hmmer python numpy matplotlib scikit-learn joblib --yes
+conda create -n sprayandpray -c au-eoed -c conda-forge -c bioconda -c defaults -c r r-tm r-snowballc r-rcolorbrewer r-xml r-argparse r-wordcloud diamond prodigal metabat2 hmmer python=3.7 numpy matplotlib scikit-learn joblib --yes
 
 ## activating environment
 source activate sprayandpray
