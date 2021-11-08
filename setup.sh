@@ -27,9 +27,10 @@ source activate sprayandpray
 mkdir -p ${CONDA_PREFIX}/etc/conda/activate.d
 
 ## adding path to executable script
-export PATH=\"$(pwd):"'$PATH'\"" \
 
 echo '#!/bin/sh'" \
+
+export PATH=\"$(pwd):"'$PATH'\"" \
 
 export rscripts=\"$(pwd)\"" >> ${CONDA_PREFIX}/etc/conda/activate.d/env_vars.sh
 
