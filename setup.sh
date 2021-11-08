@@ -18,7 +18,7 @@ conda config --add channels conda-forge 2> /dev/null
 conda config --add channels au-eoed 2> /dev/null
 
 ## creating GToTree environment and installing dependencies
-conda create -n sprayandpray -c r -c bioconda -c anaconda -c conda-forge r-tm r-snowballc r-rcolorbrewer r-xml r-argparse r-wordcloud diamond prodigal metabat2 hmmer python numpy matplotlib scikit-learn --yes
+conda create -n sprayandpray -c r -c bioconda -c anaconda -c conda-forge r-tm r-snowballc r-rcolorbrewer r-xml r-argparse r-wordcloud diamond prodigal metabat2 hmmer python numpy matplotlib scikit-learn joblib --yes
 
 ## activating environment
 source activate sprayandpray
@@ -34,7 +34,7 @@ echo '#!/bin/sh'" \
 export rscripts=\"$(pwd)\"" >> ${CONDA_PREFIX}/etc/conda/activate.d/env_vars.sh
 
 # re-activating environment so variable and PATH changes take effect
-source activate sprayandpray
+conda activate sprayandpray
 
 
 printf "\n        ${GREEN}DONE!${NC}\n\n"
