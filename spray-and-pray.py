@@ -13,7 +13,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from sklearn import metrics
-from sklearn.datasets._samples_generator import make_blobs
+from sklearn.datasets import make_blobs
 from sklearn.cluster import AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram, linkage
 
