@@ -680,23 +680,23 @@ if args.blast == "NA":
 
     print("Running Prodigal: calling ORFs from provided contigs")
     if args.meta:
-        os.system("prodigal -i %s -a %s/%s-proteins.faa -d %s/%s-cds.ffn -p meta" % (args.g, outdir, args.g, outdir, args.g))
+        os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta > /dev/null 2>&1" % (args.g, args.g, args.g))
     else:
-        os.system("prodigal -i %s -a %s/%s-proteins.faa -d %s/%s-cds.ffn" % (args.g, outdir, args.g, outdir, args.g))
+        os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn > /dev/null 2>&1" % (args.g, args.g, args.g))
 
     if args.makedb:
         print("Running Diamond: making DIAMOND BLAST database")
-        os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
+        os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
 
 
     print("Running Diamond BLAST")
     os.system(
-        "diamond blastp --db %s.dmnd --query %s/%s-proteins.faa "
+        "diamond blastp --db %s.dmnd --query %s-proteins.faa "
         "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
-        "--out %s/%s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50"
-        % (args.ref, outdir, args.g, outdir, args.g, args.hits, args.t))
+        "--out %s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50 > /dev/null 2>&1"
+        % (args.ref, args.g, args.g, args.hits, args.t))
 
-    blastFile = "%s/%s.blast" % (outdir, args.g)
+    blastFile = "%s.blast" % (args.g)
 else:
     blastFile = args.blast
 
@@ -717,7 +717,7 @@ os.system("mv %s-top%s.csv %s/" % (outfilename, args.hits, outdir))
 
 if args.bam != "NA":
     print("Extracting coverage information from the provided BAM files")
-    os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s" % (args.g, args.bam))
+    os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s > /dev/null 2>&1" % (args.g, args.bam))
 
 print("Calculating GC-content")
 gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
@@ -972,7 +972,6 @@ Rfile = open("r.txt")
 for i in Rfile:
     Rdir = (i.rstrip())
 os.system("rm r.txt")
-print(Rdir)
 
 try:
     test = open(Rdir + "/wordcloud.R")
@@ -984,7 +983,7 @@ except:
     Rdir = allButTheLast(Rdir, "/")
     os.system("rm r.txt")
 
-os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff" % (Rdir, outdir, outfilename, outdir, outfilename))
+os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff > /dev/null 2>&1" % (Rdir, outdir, outfilename, outdir, outfilename))
 #################################
 
 if args.fa:
@@ -1139,8 +1138,8 @@ if args.bin:
     os.system("rm wd.txt")
 
     try:
-        test = open(wd + "/Universal_Hug_et_al.hmm.txt")
-        hmms = wd + "/Universal_Hug_et_al.hmm.txt"
+        test = open(wd + "/Universal_Hug_et_al.hmm")
+        hmms = wd + "/Universal_Hug_et_al.hmm"
     except:
         os.system("which spray-and-pray.py > wd.txt")
         WD = open("wd.txt")
@@ -1148,15 +1147,15 @@ if args.bin:
         for i in WD:
             wd = (i.rstrip())
         wd = allButTheLast(wd, "/")
-        hmms = wd + "/Universal_Hug_et_al.hmm.txt"
+        hmms = wd + "/Universal_Hug_et_al.hmm"
         os.system("rm wd.txt")
 
-    cds = open("%s/%s-cds.ffn" % (outdir, args.g))
+    cds = open("%s-cds.ffn" % (args.g))
     cds = fasta2(cds)
 
     print("Estimating the number of genomes")
-    os.system("hmmsearch --tblout %s/universal.tblout --cpu %s %s %s/%s-proteins.faa > /dev/null 2>&1" % (outdir, args.t, hmms, outdir, args.g))
-    tblout = open("%s/universal.tblout" % outdir)
+    os.system("hmmsearch --tblout universal.tblout --cpu %s %s %s-proteins.faa > /dev/null 2>&1" % (args.t, hmms, args.g))
+    tblout = open("universal.tblout")
     tbloutDict = defaultdict(list)
     for i in tblout:
         if not re.match(r'#', i):
@@ -1290,7 +1289,7 @@ if args.bin:
     out.close()
 
     os.system("mkdir %s/bins" % (outdir))
-    print("Writing predicted clusters to bins")
+    print("Writing predicted clusters to bins:")
     for i in clusterDict.keys():
         size = 0
         out = open("%s/bins/cluster_%s.csv" % (outdir, i), "w")
@@ -1301,9 +1300,17 @@ if args.bin:
             outFASTA.write(">" + j + "\n")
             outFASTA.write(file[j] + '\n')
             size += int(summaryDict[j].split(",")[1])
-        print("cluster_%s.fa: %s Mb" % (i, str(size/1000000)))
+        print("--cluster_%s.fa: %s Mb" % (i, str(size/1000000)))
         outFASTA.close()
         out.close()
+
+    inputGenome = args.g
+    os.system("mv %s.* %s/" % (args.g, outdir))
+    # os.system("mv %s.spraynpray* %s/" % (allButTheLast(inputGenome, "."), outdir))
+    os.system("mv %s-* %s/" % (args.g, outdir))
+    if args.makedb:
+        os.system("mv %s.dmnd %s/" % (args.ref, outdir))
+    os.system("mv universal.tblout %s/" % (outdir))
 
 
 
