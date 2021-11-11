@@ -994,8 +994,6 @@ if args.fa:
 
     for i in summary:
         ls = i.rstrip().split(",")
-        print("")
-        print(i.rstrip())
 
         if ls[1] != "contig_length":
             length = float(ls[1])
@@ -1303,15 +1301,15 @@ if args.bin:
         outFASTA.close()
         out.close()
 
-    print("SprayNPray finished succesfully - if you see any \"cannot move\" errors after this message, feel free to ignore them\n")
-    os.system("sleep 10")
-    inputGenome = args.g
-    os.system("mv %s.* %s/" % (args.g, outdir))
+    print("SprayNPray finished succesfully. Thank you for using.")
+    os.system("sleep 5")
+    # inputGenome = args.g
+    # os.system("mv %s.* %s/" % (args.g, outdir))
     # os.system("mv %s.spraynpray* %s/" % (allButTheLast(inputGenome, "."), outdir))
-    os.system("mv %s-* %s/" % (args.g, outdir))
-    if args.makedb:
-        os.system("mv %s.dmnd %s/" % (args.ref, outdir))
-    os.system("mv universal.tblout %s/" % (outdir))
+    # os.system("mv %s-* %s/" % (args.g, outdir))
+    # if args.makedb:
+    #     os.system("mv %s.dmnd %s/" % (args.ref, outdir))
+    # os.system("mv universal.tblout %s/" % (outdir))
 
 
 
