@@ -1304,6 +1304,8 @@ if args.bin:
         outFASTA.close()
         out.close()
 
+    print("SprayNPray finished succesfully - if you see any \"cannot move\" errors after this message, feel free to ignore them\n")
+    os.system("sleep 10")
     inputGenome = args.g
     os.system("mv %s.* %s/" % (args.g, outdir))
     # os.system("mv %s.spraynpray* %s/" % (allButTheLast(inputGenome, "."), outdir))
