@@ -1056,7 +1056,6 @@ if args.fa:
                     else:
                         matches += 1
 
-                print(perc)
                 perc = (matches / totalHits) * 100
 
             else:
