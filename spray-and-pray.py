@@ -1040,7 +1040,8 @@ if args.fa:
                                         if species == args.species:
                                             matches += 1
                                     else:
-                                        if Genus == args.genus:
+                                        genusChoices = args.genus
+                                        if Genus in genusChoices.split(","):
                                             matches += 1
                                 else:
                                     if Class == args.Class:
@@ -1285,7 +1286,7 @@ if args.bin:
             out.write("cluster," + i.rstrip() + "\n")
     out.close()
 
-    os.system("mkdir %s/bins" % (outdir))
+    os.system("mkdir -p %s/bins" % (outdir))
     print("Writing predicted clusters to bins:")
     for i in clusterDict.keys():
         size = 0
