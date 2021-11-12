@@ -1038,7 +1038,9 @@ if args.fa:
                                 if args.genus != "NA":
                                     if args.species != "NA":
                                         if species == args.species:
-                                            matches += 1
+                                            genusChoices = args.genus
+                                            if Genus in genusChoices.split(","):
+                                                matches += 1
                                     else:
                                         genusChoices = args.genus
                                         if Genus in genusChoices.split(","):
