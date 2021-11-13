@@ -1054,7 +1054,10 @@ if args.fa:
                                                     if j.split(" ")[1] == "phage":
                                                         matches += 1
                                                 else:
-                                                    matches += 1
+                                                    if j.split(" ")[1] == "phage":
+                                                        pass
+                                                    else:
+                                                        matches += 1
                                     else:
                                         genusChoices = args.genus
                                         if Genus in genusChoices.split(","):
