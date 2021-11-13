@@ -508,6 +508,8 @@ parser.add_argument('-genus', type=str, help="genus name expected among hits to 
 parser.add_argument('-species', type=str, help="species name expected among hits to provided contigs, to be written to FASTA file (e.g. oneidensis, coli, etc.). "
                                                "If you provide this name, please be sure to also provide the domain, phylum, class, and genus names", default="NA")
 
+parser.add_argument('--phage', type=str, help="add this flag if what you are interested in is phage contigs", const=True, nargs="?")
+
 parser.add_argument('-perc', type=float, help="percentage of total hits to the contig that must be to the specified genus/species for writing to FASTA", default=0)
 
 parser.add_argument('-gc', type=float, help="minimum GC-content of contigs to write to FASTA (default = 0)", default=0)
@@ -1033,14 +1035,26 @@ if args.fa:
                         Class = "unclassifed"
 
                     if args.domain != "NA":
+
                         if args.phylum != "NA":
+
                             if args.Class != "NA":
+
                                 if args.genus != "NA":
+
                                     if args.species != "NA":
+
                                         if species == args.species:
                                             genusChoices = args.genus
+
                                             if Genus in genusChoices.split(","):
-                                                matches += 1
+
+                                                if args.phage:
+
+                                                    if j.split(" ")[1] == "phage":
+                                                        matches += 1
+                                                else:
+                                                    matches += 1
                                     else:
                                         genusChoices = args.genus
                                         if Genus in genusChoices.split(","):
@@ -1055,7 +1069,11 @@ if args.fa:
                             if Domain == args.domain:
                                 matches += 1
                     else:
-                        matches += 1
+                        if args.phage:
+                            if j.split(" ")[1] == "phage":
+                                matches += 1
+                            else:
+                                matches += 1
 
                 perc = (matches / totalHits) * 100
 
