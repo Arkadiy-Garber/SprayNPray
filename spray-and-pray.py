@@ -520,7 +520,7 @@ parser.add_argument('-cov', type=float, help="minimum coverage of contigs to wri
 
 parser.add_argument('-COV', type=float, help="maximum coverage of contigs to write to FASTA (default = 100000000)", default=100000000)
 
-parser.add_argument('-cd', type=float, help="minimum coding density (in hits/kb) to write to FASTA (default = 0.25)", default=0.25)
+parser.add_argument('-cd', type=float, help="minimum coding density (in hits/kb) to write to FASTA (default = 0)", default=0)
 
 parser.add_argument('-CD', type=float, help="maximum coding density (in hits/kb) to write to FASTA (default = 5)", default=5)
 
