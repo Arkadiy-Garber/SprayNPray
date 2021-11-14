@@ -1090,11 +1090,16 @@ if args.fa:
 
                 perc = (matches / totalHits) * 100
 
-                if hits[0] == '' and totalHits == 1 and args.include_zero_hits:
-                    perc = 100
+                if hits[0] == '' and totalHits == 1:
+                    print("NA")
+                    if args.include_zero_hits:
+                        perc = 100
+                        print(perc)
+                    print("")
 
             else:
                 perc = 100
+
 
             if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and cov >= args.cov and cov <= args.COV and aai >= args.aai and hitsperkb >= args.cd and hitsperkb <= args.CD:
                 out.write(">" + ls[0] + "\n")
