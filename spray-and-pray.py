@@ -530,7 +530,7 @@ parser.add_argument('-l', type=float, help="minimum length of contig to write to
 
 parser.add_argument('-L', type=float, help="maximum length of contig to write to FASTA (default = 100000000)", default=100000000)
 
-parser.add_argument('-aai', type=float, help="minimum average amino acid identity (percent) to reference proteins (default 35)", default=35)
+parser.add_argument('-aai', type=float, help="minimum average amino acid identity (percent) to reference proteins (default = 0)", default=0)
 
 # parser.add_argument('-key', type=str, help="Path to the taxmap_slv_ssu_ref_nr_138.1.txt file, which should be in the repository containing this program", default="NA")
 
