@@ -1070,6 +1070,9 @@ if args.fa:
                                     matches += 1
                         else:
                             if Domain == args.domain:
+                                print(hits)
+                                print(Domain)
+                                print("")
                                 matches += 1
                     else:
                         if args.phage:
