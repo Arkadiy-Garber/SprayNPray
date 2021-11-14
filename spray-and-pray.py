@@ -490,6 +490,8 @@ parser.add_argument('--hgt', type=str, help="provide this flag if you'd like the
 
 parser.add_argument('--fa', type=str, help="write subset of contigs that match user-specified parameters to a separate FASTA file", const=True, nargs="?")
 
+parser.add_argument('--include_zero_hits', type=str, help="write subset of contigs that match user-specified parameters to a separate FASTA file", const=True, nargs="?")
+
 parser.add_argument('-blast', type=str, help="DIAMOND BLAST output file from previous run", default="NA")
 
 parser.add_argument('-hits', type=str, help="total number of DIAMOND hits to report in DIAMOND output file (default=100)", default="100")
@@ -1087,6 +1089,9 @@ if args.fa:
                                 matches += 1
 
                 perc = (matches / totalHits) * 100
+
+                if args.include_zero_hits:
+                    perc = 100
 
             else:
                 perc = 100
