@@ -1083,7 +1083,7 @@ if args.fa:
             else:
                 perc = 100
 
-            if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and cov >= args.cov and cov <= args.COV and aai >= args.aai:
+            if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and cov >= args.cov and cov <= args.COV and aai >= args.aai and hitsperkb >= args.cd and hitsperkb <= args.CD:
                 out.write(">" + ls[0] + "\n")
                 out.write(file[ls[0]] + "\n")
             else:
