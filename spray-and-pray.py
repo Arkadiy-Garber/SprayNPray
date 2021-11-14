@@ -1090,7 +1090,7 @@ if args.fa:
 
                 perc = (matches / totalHits) * 100
 
-                if args.include_zero_hits:
+                if hits[0] == '' and totalHits == 1 and args.include_zero_hits:
                     perc = 100
 
             else:
