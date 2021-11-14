@@ -793,6 +793,8 @@ for i in silva:
 
         if Domain in ["Bacteria", "Archaea"]:
             Genus = lastItem(ls[3].split(";"))
+            if Genus.split(" ") == "Candidatus":
+                Genus = Genus.split(" ")[1]
 
             if Genus == "Oikopleura":
                 Domain = "Eukaryota"
@@ -803,6 +805,8 @@ for i in silva:
 
         elif Domain in ["Eukaryota"]:
             Genus = ls[4].split(" ")[0]
+            if Genus == "Candidatus":
+                Genus = ls[4].split(" ")[1]
 
             if lastItem(ls[3].split(";")) == "Chloroplast":
                 Genus = "Chloroplast" + "_" + ls[4].split(" ")[0]
