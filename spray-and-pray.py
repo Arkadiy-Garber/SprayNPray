@@ -1014,6 +1014,7 @@ if args.fa:
             if args.domain != "NA":
                 # doing the math
                 hits = ls[6].split("; ")
+                print(hits)
                 totalHits = len(hits)
                 matches = 0
                 for j in hits:
@@ -1070,7 +1071,7 @@ if args.fa:
                                     matches += 1
                         else:
                             if Domain == args.domain:
-                                print(hits)
+                                print(Genus)
                                 print(Domain)
                                 print("")
                                 matches += 1
