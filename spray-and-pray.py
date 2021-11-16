@@ -547,7 +547,22 @@ if args.ref == "NA":
     print("Please provide a reference file via -ref")
     raise SystemExit
 else:
-    print("Reference file: " + args.ref)
+    print("Reference database: " + args.ref)
+
+if args.g == "NA":
+    print("Please provide an input genome via -g")
+    raise SystemExit
+else:
+    print("Input genome: " + args.g)
+    genome = args.g
+    if lastItem(genome.split(".")) in ["faa", "ffn"]:
+        print("From the file extension of input file, it looks like you provided proteins or gene sequences. "
+              "Currently, SprayNPray only takes contigs.")
+        answer = input("Did you provide contigs and would like to proceed with analysis? (y/n): ")
+        if answer == "y":
+            pass
+        else:
+            raise SystemExit
 
 if args.lvl != "NA":
     if args.lvl in ["Domain", "Phylum", "Class", "Genus", "species"]:
@@ -778,7 +793,14 @@ if args.bam != "NA":
 
 # reading silva headers
 silvaDict = defaultdict(lambda: defaultdict(lambda: 'unclassified'))
-silva = open(silvaFile)
+try:
+    silva = open(silvaFile)
+except FileNotFoundError:
+    print("SprayNPray cannot find the following file: taxmap_slv_ssu_ref_nr_138.1.txt. There is a good chance that it is present in its gzipped form "
+          "in the SprayNPray directory/folder on your system. Please unzip this file and try running the program again. "
+          "If you just waited for a length DIAMOND run to finish, you can provide the DIAMOND BLAST output (%s.blast) to the command when you re-run using the -blast argument" % args.g)
+    raise SystemExit
+
 for i in silva:
     ls = i.rstrip().split("\t")
     if ls[0] != "primaryAccession":
@@ -1343,7 +1365,7 @@ if args.bin:
         outFASTA.close()
         out.close()
 
-    print("SprayNPray finished succesfully. Thank you for using.")
+    print("SprayNPray finished successfully. Thank you for using.")
     os.system("sleep 5")
     # inputGenome = args.g
     # os.system("mv %s.* %s/" % (args.g, outdir))
