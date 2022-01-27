@@ -483,14 +483,18 @@ parser.add_argument('--spades', type=str, help="is this a SPAdes assembly, with 
                                                "then you can provide this flag, and BinBlaster will summarize using the coverage "
                                                "information provided in the SPAdes headers", const=True, nargs="?")
 
+parser.add_argument('--custom_ref', type=str, help="the reference database is not nr", const=True, nargs="?")
+
 parser.add_argument('--meta', type=str, help="contigs are from a mixed community of organisms", const=True, nargs="?")
+
+parser.add_argument('--c', type=str, help="Use complete genes only (no genes that run off edges of contigs)", const=True, nargs="?")
 
 parser.add_argument('--hgt', type=str, help="provide this flag if you'd like the program to output potential HGTs into a separate file. "
                                             "This feature is designed for eukaryotic contigs expected to have HGTs of bacterial origin.", const=True, nargs="?")
 
 parser.add_argument('--fa', type=str, help="write subset of contigs that match user-specified parameters to a separate FASTA file", const=True, nargs="?")
 
-parser.add_argument('--include_zero_hits', type=str, help="write subset of contigs that match user-specified parameters to a separate FASTA file", const=True, nargs="?")
+# parser.add_argument('--include_zero_hits', type=str, help="write subset of contigs that match user-specified parameters to a separate FASTA file", const=True, nargs="?")
 
 parser.add_argument('-blast', type=str, help="DIAMOND BLAST output file from previous run", default="NA")
 
@@ -526,11 +530,15 @@ parser.add_argument('-cd', type=float, help="minimum coding density (in hits/kb)
 
 parser.add_argument('-CD', type=float, help="maximum coding density (in hits/kb) to write to FASTA (default = 5)", default=5)
 
-parser.add_argument('-l', type=float, help="minimum length of contig to write to FASTA (default = 1000)", default=1000)
+parser.add_argument('-l', type=float, help="minimum length of contig to write to FASTA (default = 300)", default=300)
 
 parser.add_argument('-L', type=float, help="maximum length of contig to write to FASTA (default = 100000000)", default=100000000)
 
-parser.add_argument('-aai', type=float, help="minimum average amino acid identity (percent) to reference proteins (default = 0)", default=0)
+parser.add_argument('-aai', type=float, help="minimum average amino acid identity (percent) to reference proteins (default = 30)", default=30)
+
+parser.add_argument('-minGenes', type=float, help="minimum number of genes that must be on a contig to write to FASTA (default = 1)", default=1)
+
+parser.add_argument('-minLength', type=float, help="minimum length of gene to include in the BLAST analysis (default = 90)", default=90)
 
 # parser.add_argument('-key', type=str, help="Path to the taxmap_slv_ssu_ref_nr_138.1.txt file, which should be in the repository containing this program", default="NA")
 
@@ -692,21 +700,78 @@ if total < 20000:
     if args.meta:
         pass
     else:
-        print("looks like there are less than 20000 characters in your provided sequences file. Please re-run the script with the --meta flag")
+        print("Looks like there are less than 20000 characters in your provided sequences file. Please re-run the script with the --meta flag")
         raise SystemExit
+
+if len(file.keys()) == 0:
+    print("SprayNPray did not detect any sequences in your provided contigs file. Please check your input FASTA file.")
+    raise SystemExit
 
 if args.blast == "NA":
 
     print("Running Prodigal: calling ORFs from provided contigs")
-    if args.meta:
-        os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta > /dev/null 2>&1" % (args.g, args.g, args.g))
+    if args.c:
+
+        if args.meta:
+            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta -c > /dev/null 2>&1" % (args.g, args.g, args.g))
+        else:
+            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -c > /dev/null 2>&1" % (args.g, args.g, args.g))
     else:
-        os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn > /dev/null 2>&1" % (args.g, args.g, args.g))
+        if args.meta:
+            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta > /dev/null 2>&1" % (args.g, args.g, args.g))
+        else:
+            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn > /dev/null 2>&1" % (args.g, args.g, args.g))
+
+    # checking the prodigal-produced .faa file that will be used for downstream analysis
+    faa = open("%s-proteins.faa" % args.g)
+    faa = fasta(faa)
+    out = open("%s-proteins-new.faa" % args.g, "w")
+    count = 0
+    residues = 0
+    Xs = 0
+    for i in faa.keys():
+        if len(faa[i]) >= args.minLength:
+            out.write(">" + i + "\n")
+            out.write(faa[i] + "\n")
+            count += 1
+            residues += len(faa[i])
+            Xs += list(faa[i]).count("X")
+
+    if Xs == residues:
+        print("Looks like you have provided protein sequences instead of contigs to SprayNPray. "
+              "Currently, this program only accepts as input a FASTA-formatted file of contigs, "
+              "containing nucleotide sequences (e.g. files with extensions fna, fa, or fasta)."
+              "If you believe this message is in error, please let the developers know by starting a GitHub Issue.")
+        raise SystemExit
+
+    if count == 0:
+        print("SprayNPray did not detect any protein sequences in the Prodigal output. Looks like Prodigal did not "
+              "perform as expected. Please check your input contigs, as well the Prodigal installation within the SprayNPray "
+              "conda environment. You can type \'prodigal -h\' to check if prodigal is installed properly.")
+        raise SystemExit
+
+    out.close()
+    os.system("mv %s-proteins-new.faa %s-proteins.faa" % (args.g, args.g))
 
     if args.makedb:
         print("Running Diamond: making DIAMOND BLAST database")
         os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
 
+    else:
+        ref = args.ref
+        try:
+            dbfile = open("%s.dmnd" % ref)
+        except FileNotFoundError:
+            try:
+                dbfile = open("%s.dmnd" % allButTheLast(ref, "."))
+            except FileNotFoundError:
+                print("SprayNPray cannot locate the diamond blast database file")
+                answer = input("Would you like to SprayNPray to make a diamond blast db? If not, SprayNPray will exit. (y/n): ")
+                if answer == "y":
+                    os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
+                else:
+                    print("Exiting")
+                    raise SystemExit
 
     print("Running Diamond BLAST")
     os.system(
@@ -719,10 +784,24 @@ if args.blast == "NA":
 else:
     blastFile = args.blast
 
+blast = open(blastFile)
+count = 0
+for j in blast:
+    count += 1
+
+if count == 0:
+    print("It looks like there was an issue running DIAMOND. The file that was created did not have any hits. "
+          "Please check your input file, as well as the DIAMOND installation")
+    raise SystemExit
+
+try:
+    blast = open(blastFile)
+except FileNotFoundError:
+    print("")
+    raise SystemExit
 
 out = open("%s-top%s.csv" % (outfilename, args.hits), "w")
 out.write("orf,taxa,top_hit\n")
-blast = open(blastFile)
 for i in blast:
     ls = i.rstrip().split("\t")
     try:
@@ -775,12 +854,16 @@ for i in blast:
         name = name.split("]")[0]
         name = name.split("[")[1]
     except IndexError:
-        name = "NA"
+        if args.custom_ref:
+            name = ls[1]
+        else:
+            name = "NA"
     aai = ls[2]
     if ls[0] not in redunDict.keys():
         redunDict[ls[0]].append(name)
         blastDict[contig].append(name)
         aaiDict[contig].append(float(aai))
+blast.close()
 
 if args.bam != "NA":
     depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
@@ -968,6 +1051,9 @@ for i in file.keys():
     out.write("\n")
 out.close()
 os.system("mv %s.csv %s" % (outfilename, outdir))
+os.system("mv %s-proteins.faa %s/" % (args.g, outdir))
+os.system("mv %s-cds.ffn %s/" % (args.g, outdir))
+os.system("mv %s.blast %s/" % (args.g, outdir))
 
 
 ############## WORDCLOUD LOOP ####################
@@ -1029,6 +1115,9 @@ if args.fa:
             length = float(ls[1])
             hitsperkb = float(ls[2])
             gc = float(ls[4])
+            hits = ls[6].split("; ")
+            totalHits = len(hits)
+
             try:
                 aai = float(ls[5])
             except ValueError:
@@ -1041,10 +1130,8 @@ if args.fa:
 
             if args.domain != "NA":
                 # doing the math
-                hits = ls[6].split("; ")
-                print(hits)
-                totalHits = len(hits)
                 matches = 0
+
                 for j in hits:
                     Genus = j.split(" ")[0]
 
@@ -1099,9 +1186,6 @@ if args.fa:
                                     matches += 1
                         else:
                             if Domain == args.domain:
-                                print(Genus)
-                                print(Domain)
-                                print("")
                                 matches += 1
                     else:
                         if args.phage:
@@ -1113,17 +1197,13 @@ if args.fa:
                 perc = (matches / totalHits) * 100
 
                 if hits[0] == '' and totalHits == 1:
-                    print("NA")
-                    if args.include_zero_hits:
+                    if args.minGenes == 0:
                         perc = 100
-                        print(perc)
-                    print("")
 
             else:
                 perc = 100
 
-
-            if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and cov >= args.cov and cov <= args.COV and aai >= args.aai and hitsperkb >= args.cd and hitsperkb <= args.CD:
+            if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and cov >= args.cov and cov <= args.COV and aai >= args.aai and hitsperkb >= args.cd and hitsperkb <= args.CD and totalHits >= args.minGenes:
                 out.write(">" + ls[0] + "\n")
                 out.write(file[ls[0]] + "\n")
             else:
