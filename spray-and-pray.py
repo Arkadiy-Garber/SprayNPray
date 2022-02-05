@@ -16,6 +16,8 @@ from sklearn import metrics
 from sklearn.datasets import make_blobs
 from sklearn.cluster import AgglomerativeClustering
 from scipy.cluster.hierarchy import dendrogram, linkage
+from Bio.SeqUtils import GC
+from Bio.Seq import Seq
 
 
 def reject_outliers(data, m):
@@ -147,22 +149,6 @@ def tet(seq):
     return Dict, totalKmers
 
 
-def firstNonspace(ls):
-    for i in ls:
-        if i != "":
-            break
-    return i
-
-
-def gc(seq):
-    gc = 0
-    for bp in seq:
-        if bp == "C" or bp == "G":
-            gc += 1
-    return gc/len(seq)
-
-
-
 def Dictparser(Dictionary):
     lowest = float(1000)
     for i in Dictionary:
@@ -170,40 +156,6 @@ def Dictparser(Dictionary):
             lowest = Dictionary[i]
             key = i
     return [i, lowest]
-
-
-def reverseComplement(seq):
-    out = []
-    for i in range(len(seq)-1, -1, -1):
-        nucleotide = seq[i]
-        if nucleotide == "C":
-            nucleotide = "G"
-        elif nucleotide == "G":
-            nucleotide = "C"
-        elif nucleotide == "T":
-            nucleotide = "A"
-        elif nucleotide == "A":
-            nucleotide = "T"
-        out.append(nucleotide)
-    outString = "".join(out)
-    return outString
-
-
-def Complement(seq):
-    out = []
-    for i in range(0, len(seq)):
-        nucleotide = seq[i]
-        if nucleotide == "C":
-            nucleotide = "G"
-        elif nucleotide == "G":
-            nucleotide = "C"
-        elif nucleotide == "T":
-            nucleotide = "A"
-        elif nucleotide == "A":
-            nucleotide = "T"
-        out.append(nucleotide)
-    outString = "".join(out)
-    return outString
 
 
 def SeqCoord(seq, start, end):
@@ -218,44 +170,11 @@ def howMany(ls, exclude):
     return counter
 
 
-def stabilityCounter(int):
-    if len(str(int)) == 1:
-        string = (str(0) + str(0) + str(0) + str(0) + str(int))
-        return (string)
-    if len(str(int)) == 2:
-        string = (str(0) + str(0) + str(0) + str(int))
-        return (string)
-    if len(str(int)) == 3:
-        string = (str(0) + str(0) + str(int))
-        return (string)
-    if len(str(int)) == 4:
-        string = (str(0) + str(int))
-        return (string)
-    if len(str(int)) > 4:
-        string = str(int)
-        return (string)
-
-
 def sum(ls):
     count = 0
     for i in ls:
         count += float(i)
     return count
-
-
-def ave(ls):
-    count = 0
-    for i in ls:
-        count += float(i)
-    return count/len(ls)
-
-
-def derep(ls):
-    outLS = []
-    for i in ls:
-        if i not in outLS:
-            outLS.append(i)
-    return outLS
 
 
 def cluster(data, maxgap):
@@ -280,58 +199,12 @@ def cluster(data, maxgap):
     return groups
 
 
-def GCcalc(seq):
-    count = 0
-    for i in seq:
-        if i == "G" or i == "C":
-            count += 1
-    return count/len(seq)
-
-
 def lastItem(ls):
     x = ''
     for i in ls:
         if i != "":
             x = i
     return x
-
-
-def RemoveDuplicates(ls):
-    empLS = []
-    counter = 0
-    for i in ls:
-        if i not in empLS:
-            empLS.append(i)
-        else:
-            pass
-    return empLS
-
-
-def secondToLastItem(ls):
-    x = ''
-    for i in ls[0:len(ls)-1]:
-        x = i
-    return x
-
-
-def pull(item, one, two):
-    ls = []
-    counter = 0
-    for i in item:
-        if counter == 0:
-            if i != one:
-                pass
-            else:
-                counter += 1
-                ls.append(i)
-        else:
-            if i != two:
-                ls.append(i)
-            else:
-                ls.append(i)
-                counter = 0
-    outstr = "".join(ls)
-    return outstr
 
 
 def replace(stringOrlist, list, item):
@@ -343,27 +216,6 @@ def replace(stringOrlist, list, item):
             emptyList.append(item)
     outString = "".join(emptyList)
     return outString
-
-
-def remove(stringOrlist, list):
-    emptyList = []
-    for i in stringOrlist:
-        if i not in list:
-            emptyList.append(i)
-        else:
-            pass
-    outString = "".join(emptyList)
-    return outString
-
-
-def removeLS(stringOrlist, list):
-    emptyList = []
-    for i in stringOrlist:
-        if i not in list:
-            emptyList.append(i)
-        else:
-            pass
-    return emptyList
 
 
 def fasta(fasta_file):
@@ -429,17 +281,6 @@ def allButTheFirst(iterable, delim):
         x += iterable.split(delim)[i]
         x += delim
     return x[0:len(x)]
-
-
-def filterRe(list, regex):
-    ls1 = []
-    ls2 = []
-    for i in list:
-        if re.findall(regex, i):
-            ls1.append(i)
-        else:
-            ls2.append(i)
-    return ls1, ls2
 
 
 parser = argparse.ArgumentParser(
@@ -753,22 +594,27 @@ if args.blast == "NA":
     out.close()
     os.system("mv %s-proteins-new.faa %s-proteins.faa" % (args.g, args.g))
 
+    db = args.ref
     if args.makedb:
         print("Running Diamond: making DIAMOND BLAST database")
         os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
+        db = "%s.dmnd" % args.ref
 
     else:
         ref = args.ref
         try:
             dbfile = open("%s.dmnd" % ref)
+            db = "%s.dmnd" % ref
         except FileNotFoundError:
             try:
                 dbfile = open("%s.dmnd" % allButTheLast(ref, "."))
+                db = "%s.dmnd" % allButTheLast(ref, ".")
             except FileNotFoundError:
                 print("SprayNPray cannot locate the diamond blast database file")
                 answer = input("Would you like to SprayNPray to make a diamond blast db? If not, SprayNPray will exit. (y/n): ")
                 if answer == "y":
                     os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
+                    db = "%s.dmnd" % args.ref
                 else:
                     print("Exiting")
                     raise SystemExit
@@ -778,7 +624,7 @@ if args.blast == "NA":
         "diamond blastp --db %s.dmnd --query %s-proteins.faa "
         "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
         "--out %s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50 > /dev/null 2>&1"
-        % (args.ref, args.g, args.g, args.hits, args.t))
+        % (db, args.g, args.g, args.hits, args.t))
 
     blastFile = "%s.blast" % (args.g)
 else:
@@ -823,13 +669,15 @@ GC = 0
 total = 0
 for i in file.keys():
     seq = file[i]
-    total += len(seq)
-    gc = 0
-    for bp in seq:
-        if bp == "C" or bp == "G":
-            GC += 1
-            gc += 1
-    gcDict[i] = str( float(gc/len(seq)) * 100 )
+    gcDict[i] = str(GC(seq))
+
+    # total += len(seq)
+    # gc = 0
+    # for bp in seq:
+    #     if bp == "C" or bp == "G":
+    #         GC += 1
+    #         gc += 1
+    # gcDict[i] = str( float(gc/len(seq)) * 100 )
 
 # print("Calculating tetranucleotide frequency")
 # gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
