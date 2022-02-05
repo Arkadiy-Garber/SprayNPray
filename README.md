@@ -9,9 +9,9 @@
 ## Citing SprayNPray
 If you found this software useful to your research please cite as follows:
 
-Garber, AI. 2020: SprayNPray: Rapid and simple taxonomic profiling of genome and metagenome contigs, GitHub repository: https://github.com/Arkadiy-Garber/SprayNPray.
+Garber, A. I., Armbruster, C. R., Lee, S. E., Cooper, V. S., Bomberger, J. M., & McAllister, S. M. (2021). SprayNPray: user-friendly taxonomic profiling of genome and metagenome contigs. In bioRxiv (p. 2021.07.17.452725). https://doi.org/10.1101/2021.07.17.452725
 
-Please also cite the various dependencies used by spray-and-pray: [DIAMOND](https://pubmed.ncbi.nlm.nih.gov/25402007/), [Prodigal](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2848648/), and [Metabat2](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6662567/).
+Please also cite the various dependencies used by spray-and-pray: [DIAMOND](https://pubmed.ncbi.nlm.nih.gov/25402007/), [Prodigal](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC2848648/), [Metabat2](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC6662567/), and [Biopython](https://biopython.org/)
 
 
 Provide either raw contigs or ORFs (amino acid) in FASTA format.
