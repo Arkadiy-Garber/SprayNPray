@@ -18,7 +18,7 @@ printf "\n    ${GREEN}Setting up conda environment...${NC}\n\n"
 # conda config --add channels au-eoed 2> /dev/null
 
 ## creating GToTree environment and installing dependencies
-conda create -n sprayandpray -c au-eoed -c conda-forge -c bioconda -c defaults -c r r-tm r-snowballc r-rcolorbrewer r-xml r-argparse r-wordcloud diamond prodigal metabat2 hmmer python=3.7 numpy matplotlib scikit-learn joblib --yes
+conda create -n sprayandpray -c au-eoed -c conda-forge -c bioconda -c defaults -c r r-tm r-snowballc r-rcolorbrewer r-xml r-argparse r-wordcloud biopython diamond prodigal metabat2 hmmer python=3.7 numpy matplotlib scikit-learn joblib --yes
 
 ## activating environment
 source activate sprayandpray
