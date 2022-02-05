@@ -51,6 +51,7 @@ Do not worry about the dependencies after conda installation. Just enter `source
 * [Prodigal](https://github.com/hyattpd/Prodigal)
 * [Metabat](https://bitbucket.org/berkeleylab/metabat)
 * [Python3](https://www.python.org/download/releases/3.0/)
+* [Biopython3](https://biopython.org/)
 
 
 ## Usage
