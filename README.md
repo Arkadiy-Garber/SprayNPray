@@ -33,9 +33,11 @@ Additionally, the user can specify a set of criteria (e.g. GC-content, read cove
     git clone https://github.com/Arkadiy-Garber/SprayNPray.git
     cd SprayNPray
     bash setup.sh
-    source activate sprayandpray
+    conda activate sprayandpray
 
-Do not worry about the dependencies after conda installation. Just enter `source deactivate` when finished using the program.
+Please also place spray-and-pray.py into the PATH variable: e.g. ~/bin/SprayNPray. You can update the PATH variable in a file called .bash_profile or .profile in your home directory.
+
+Do not worry about the dependencies after conda installation. Just enter `conda deactivate` when finished using the program.
 
 
 ## Installation without conda:
