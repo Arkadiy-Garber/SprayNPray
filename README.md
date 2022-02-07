@@ -56,6 +56,9 @@ Do not worry about the dependencies after conda installation. Just enter `conda 
 * [Biopython3](https://biopython.org/)
 * [Joblib](https://joblib.readthedocs.io/en/latest/)
 
+### Test run to check dependencies or to check conda environment:
+
+    bash testRun.sh
 
 ## Usage
 
