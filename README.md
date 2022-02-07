@@ -54,6 +54,7 @@ Do not worry about the dependencies after conda installation. Just enter `conda 
 * [Metabat](https://bitbucket.org/berkeleylab/metabat)
 * [Python3](https://www.python.org/download/releases/3.0/)
 * [Biopython3](https://biopython.org/)
+* [Joblib](https://joblib.readthedocs.io/en/latest/)
 
 
 ## Usage
