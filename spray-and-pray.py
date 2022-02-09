@@ -381,6 +381,8 @@ parser.add_argument('-minGenes', type=float, help="minimum number of genes that 
 
 parser.add_argument('-minLength', type=float, help="minimum length of gene to include in the BLAST analysis (default = 90)", default=90)
 
+parser.add_argument('--test', type=str, help="add this flag during testing of this program's dependencies", const=True, nargs="?")
+
 # parser.add_argument('-key', type=str, help="Path to the taxmap_slv_ssu_ref_nr_138.1.txt file, which should be in the repository containing this program", default="NA")
 
 if len(sys.argv) == 1:
@@ -598,7 +600,7 @@ if args.blast == "NA":
     if args.makedb:
         print("Running Diamond: making DIAMOND BLAST database")
         os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
-        db = "%s.dmnd" % args.ref
+        db = "%s" % args.ref
 
     else:
         ref = args.ref
@@ -665,7 +667,6 @@ if args.bam != "NA":
 
 print("Calculating GC-content")
 gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
-GC = 0
 total = 0
 for i in file.keys():
     seq = file[i]
@@ -899,8 +900,8 @@ for i in file.keys():
     out.write("\n")
 out.close()
 os.system("mv %s.csv %s" % (outfilename, outdir))
-os.system("mv %s-proteins.faa %s/" % (args.g, outdir))
-os.system("mv %s-cds.ffn %s/" % (args.g, outdir))
+# os.system("mv %s-proteins.faa %s/" % (args.g, outdir))
+# os.system("mv %s-cds.ffn %s/" % (args.g, outdir))
 os.system("mv %s.blast %s/" % (args.g, outdir))
 
 
@@ -1293,8 +1294,14 @@ if args.bin:
         outFASTA.close()
         out.close()
 
-    print("SprayNPray finished successfully. Thank you for using.")
-    os.system("sleep 5")
+    os.system("mv %s-proteins.faa %s/" % (args.g, outdir))
+    os.system("mv %s-cds.ffn %s/" % (args.g, outdir))
+
+    if args.test:
+        print("\nSprayNPray finished without errors. Checking the output files to make sure everything is in check...")
+    else:
+        print("\nSprayNPray finished successfully. Thank you for using.")
+    os.system("sleep 1")
     # inputGenome = args.g
     # os.system("mv %s.* %s/" % (args.g, outdir))
     # os.system("mv %s.spraynpray* %s/" % (allButTheLast(inputGenome, "."), outdir))
@@ -1302,6 +1309,7 @@ if args.bin:
     # if args.makedb:
     #     os.system("mv %s.dmnd %s/" % (args.ref, outdir))
     # os.system("mv universal.tblout %s/" % (outdir))
+
 
 
 
