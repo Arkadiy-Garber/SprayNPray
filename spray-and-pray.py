@@ -902,7 +902,8 @@ out.close()
 os.system("mv %s.csv %s" % (outfilename, outdir))
 # os.system("mv %s-proteins.faa %s/" % (args.g, outdir))
 # os.system("mv %s-cds.ffn %s/" % (args.g, outdir))
-os.system("mv %s.blast %s/" % (args.g, outdir))
+if args.blast == "NA":
+    os.system("mv %s.blast %s/" % (args.g, outdir))
 
 
 ############## WORDCLOUD LOOP ####################
@@ -1067,7 +1068,7 @@ if args.hgt:
     summary = open("%s/%s.csv" % (outdir, outfilename))
     for i in summary:
         ls = i.rstrip().split(",")
-        if ls[2] != "hits_per_contig":
+        if ls[2] != "hits_per_kb":
             counter = 0
             for j in ls[6].split("; "):
                 if re.findall(r'Bacteria', j):
