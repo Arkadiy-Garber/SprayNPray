@@ -20,6 +20,17 @@ from Bio.SeqUtils import GC
 from Bio.Seq import Seq
 
 
+def remove(stringOrlist, list):
+    emptyList = []
+    for i in stringOrlist:
+        if i not in list:
+            emptyList.append(i)
+        else:
+            pass
+    outString = "".join(emptyList)
+    return outString
+
+
 def reject_outliers(data, m):
     u = np.mean(data)
     s = np.std(data)
@@ -442,9 +453,12 @@ if args.out == "NA":
     os.system("mkdir -p %s" % allButTheLast(genome, "."))
     outdir = allButTheLast(genome, ".")
 else:
-    outfilename = args.out
-    os.system("mkdir -p %s" % args.out)
-    outdir = args.out
+    if lastItem(args.out) == "/":
+        outfilename = remove(args.out, ["/"])
+    else:
+        outfilename = args.out
+        os.system("mkdir -p %s" % args.out)
+        outdir = args.out
 
 if args.fa:
     print("SprayNPray will write a FASTA file with contigs matching user-specified metrics: " + outfilename + "-contigs.fa")
@@ -600,7 +614,7 @@ if args.blast == "NA":
     if args.makedb:
         print("Running Diamond: making DIAMOND BLAST database")
         os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
-        db = "%s" % args.ref
+        db = "%s.dmnd" % args.ref
 
     else:
         ref = args.ref
@@ -623,7 +637,7 @@ if args.blast == "NA":
 
     print("Running Diamond BLAST")
     os.system(
-        "diamond blastp --db %s.dmnd --query %s-proteins.faa "
+        "diamond blastp --db %s --query %s-proteins.faa "
         "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
         "--out %s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50 > /dev/null 2>&1"
         % (db, args.g, args.g, args.hits, args.t))
@@ -1310,14 +1324,6 @@ if args.bin:
     # if args.makedb:
     #     os.system("mv %s.dmnd %s/" % (args.ref, outdir))
     # os.system("mv universal.tblout %s/" % (outdir))
-
-
-
-
-
-
-
-
 
 
 
