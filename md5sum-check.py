@@ -524,16 +524,26 @@ if len(sys.argv) == 1:
 args = parser.parse_known_args()[0]
 
 DIR = os.listdir(args.o)
-if len(DIR) != 9:
-    print(DIR)
-    print("One or more files is missing from the output.")
-    raise SystemExit
-
 bins = os.listdir(args.o + "/bins")
-if len(bins) != 4:
-    print(bins)
-    print("One or more files is missing from the output.")
-    raise SystemExit
+
+os.system("which md5 > md5.path")
+path = open("md5.path")
+md5 = 0
+for i in path:
+    if len(i) > 0:
+        md5 = "1"
+
+
+# if len(DIR) != 9:
+#     print(DIR)
+#     print("One or more files is missing from the output.")
+#     raise SystemExit
+
+
+# if len(bins) != 4:
+#     print(bins)
+#     print("One or more files is missing from the output.")
+#     raise SystemExit
 
 md5Dict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
 md5 = open("%s/md5sum.txt" % args.i)
@@ -541,11 +551,26 @@ for i in md5:
     ls = i.rstrip().split("\t")
     md5Dict[ls[0]] = ls[1]
 
+if md5 == "1":
+    for i in DIR:
+        if i != "bins" and not re.findall(r'tiff', i):
+            os.system("md5 %s/%s >> %s/%s.md5sum" % (args.o, i, args.o, i))
+            file = open("%s/%s.md5sum" % (args.o, i))
+            original = md5Dict[i]
+            test = ""
+            for j in file:
+                test = lastItem(j.rstrip().split(" "))
+            if test != original:
+                print(i)
+                print(test)
+                print(original)
+                print("One or more files do not have it's expected contents...")
+                raise SystemExit
+            os.system("rm %s/%s.md5sum" % (args.o, i))
 
-for i in DIR:
-    if i != "bins" and not re.findall(r'tiff', i):
-        os.system("md5 %s/%s >> %s/%s.md5sum" % (args.o, i, args.o, i))
-        file = open("%s/%s.md5sum" % (args.o, i))
+    for i in bins:
+        os.system("md5 %s/bins/%s >> %s/bins/%s.md5sum" % (args.o, i, args.o, i))
+        file = open("%s/bins/%s.md5sum" % (args.o, i))
         original = md5Dict[i]
         test = ""
         for j in file:
@@ -556,22 +581,39 @@ for i in DIR:
             print(original)
             print("One or more files do not have it's expected contents...")
             raise SystemExit
-        os.system("rm %s/%s.md5sum" % (args.o, i))
+        os.system("rm %s/bins/%s.md5sum" % (args.o, i))
 
-for i in bins:
-    os.system("md5 %s/bins/%s >> %s/bins/%s.md5sum" % (args.o, i, args.o, i))
-    file = open("%s/bins/%s.md5sum" % (args.o, i))
-    original = md5Dict[i]
-    test = ""
-    for j in file:
-        test = lastItem(j.rstrip().split(" "))
-    if test != original:
-        print(i)
-        print(test)
-        print(original)
-        print("One or more files do not have it's expected contents...")
-        raise SystemExit
-    os.system("rm %s/bins/%s.md5sum" % (args.o, i))
+else:
+    for i in DIR:
+        if i != "bins" and not re.findall(r'tiff', i):
+            os.system("md5sum %s/%s >> %s/%s.md5sum" % (args.o, i, args.o, i))
+            file = open("%s/%s.md5sum" % (args.o, i))
+            original = md5Dict[i]
+            test = ""
+            for j in file:
+                test = j.rstrip().split(" ")[0]
+            if test != original:
+                print(i)
+                print(test)
+                print(original)
+                print("One or more files do not have it's expected contents...")
+                raise SystemExit
+            os.system("rm %s/%s.md5sum" % (args.o, i))
+
+    for i in bins:
+        os.system("md5sum %s/bins/%s >> %s/bins/%s.md5sum" % (args.o, i, args.o, i))
+        file = open("%s/bins/%s.md5sum" % (args.o, i))
+        original = md5Dict[i]
+        test = ""
+        for j in file:
+            test = j.rstrip().split(" ")[0]
+        if test != original:
+            print(i)
+            print(test)
+            print(original)
+            print("One or more files do not have it's expected contents...")
+            raise SystemExit
+        os.system("rm %s/bins/%s.md5sum" % (args.o, i))
 
 print("All output files look accurate. Seems like SprayNPray and all its dependencies are installed ad functional!")
 
