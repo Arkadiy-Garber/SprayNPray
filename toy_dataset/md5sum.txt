@@ -1,0 +1,12 @@
+test_dataset.fasta-cds.ffn	cfcfb35218d41990dfdda6c8eb44fb51
+test_dataset.fasta-proteins.faa	29c0f4d241b583f0be749bb78d0b1ac6
+test_dataset.fasta.blast	5f4715bf51fe798e55b56dc25a306d5f
+testrun-top100.csv	ae782012466561739aef367fe6b81c12
+testrun-wClusters.csv	a7a2c96261b0dced82616c9276d7137d
+testrun.csv	9477ad8ddfcbde873746b69afd2f376a
+testrun.words.csv	79690b3ed2852d52d6014bd110655eda
+testrun.words.tiff	71618541f227678e166a9c951dbbcb91
+cluster_0.csv	d38ecfca067933dcb0a6480473b5df03
+cluster_0.fa	cea6e18f2d92ab6fca44a42d02dc93fa
+cluster_1.csv	8cfce3f2c9d489a2e46d83e80e41f92d
+cluster_1.fa	9670fc51eb7bc4001f0214145f0487b8
