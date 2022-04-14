@@ -495,6 +495,7 @@ if args.fa:
         print("Domain restriction: " + args.domain)
 
 
+##  DEPRACATED ORF-MODE
 # if args.o != "NA":
 #     file = open(args.o)
 #     file = fasta2(file)
@@ -577,7 +578,7 @@ if args.blast == "NA":
         if args.meta:
             os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta > /dev/null 2>&1" % (args.g, args.g, args.g))
         else:
-            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn > /dev/null 2>&1" % (args.g, args.g, args.g))
+            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn" % (args.g, args.g, args.g))
 
     # checking the prodigal-produced .faa file that will be used for downstream analysis
     faa = open("%s-proteins.faa" % args.g)
@@ -623,14 +624,14 @@ if args.blast == "NA":
             db = "%s.dmnd" % ref
         except FileNotFoundError:
             try:
-                dbfile = open("%s.dmnd" % allButTheLast(ref, "."))
-                db = "%s.dmnd" % allButTheLast(ref, ".")
+                dbfile = open("%s" % ref)
+                db = "%s" % ref
             except FileNotFoundError:
                 print("SprayNPray cannot locate the diamond blast database file")
                 answer = input("Would you like to SprayNPray to make a diamond blast db? If not, SprayNPray will exit. (y/n): ")
                 if answer == "y":
-                    os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
-                    db = "%s.dmnd" % args.ref
+                    os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (ref, ref))
+                    db = "%s.dmnd" % ref
                 else:
                     print("Exiting")
                     raise SystemExit
@@ -742,9 +743,11 @@ silvaDict = defaultdict(lambda: defaultdict(lambda: 'unclassified'))
 try:
     silva = open(silvaFile)
 except FileNotFoundError:
-    print("SprayNPray cannot find the following file: taxmap_slv_ssu_ref_nr_138.1.txt. There is a good chance that it is present in its gzipped form "
-          "in the SprayNPray directory/folder on your system. Please unzip this file and try running the program again. "
-          "If you just waited for a length DIAMOND run to finish, you can provide the DIAMOND BLAST output (%s.blast) to the command when you re-run using the -blast argument" % args.g)
+    print("SprayNPray cannot find the following file: taxmap_slv_ssu_ref_nr_138.1.txt. \n"
+          "There is a good chance that it is present in its gzipped form in the SprayNPray \n"
+          "directory/folder on your system. Please unzip this file and try running the program \n"
+          "again. If you just waited for a length DIAMOND run to finish, you can provide the \n"
+          "DIAMOND BLAST output (%s.blast) to the command when you re-run using the -blast argument" % args.g)
     raise SystemExit
 
 for i in silva:
