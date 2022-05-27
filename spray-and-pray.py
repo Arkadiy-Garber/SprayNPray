@@ -1138,25 +1138,29 @@ if args.hgt:
 if args.bin:
     print("Starting the binning algorithm")
 
-    os.system("echo ${hmms} > wd.txt")
+    # os.system("echo ${hmms} > wd.txt")
+    # WD = open("wd.txt")
+    # wd = ''
+    # for i in WD:
+    #     wd = (i.rstrip())
+    # os.system("rm wd.txt")
+    #
+    # try:
+    #     test = open(wd + "/Universal_Hug_et_al.hmm")
+    #     hmms = wd + "/Universal_Hug_et_al.hmm"
+    # except FileNotFoundError:
+
+    os.system("which spray-and-pray.py > wd.txt")
+
     WD = open("wd.txt")
     wd = ''
+
     for i in WD:
         wd = (i.rstrip())
-    os.system("rm wd.txt")
+    wd = allButTheLast(wd, "/")
 
-    try:
-        test = open(wd + "/Universal_Hug_et_al.hmm")
-        hmms = wd + "/Universal_Hug_et_al.hmm"
-    except:
-        os.system("which spray-and-pray.py > wd.txt")
-        WD = open("wd.txt")
-        wd = ''
-        for i in WD:
-            wd = (i.rstrip())
-        wd = allButTheLast(wd, "/")
-        hmms = wd + "/Universal_Hug_et_al.hmm"
-        os.system("rm wd.txt")
+    hmms = wd + "/Universal_Hug_et_al.hmm"
+    os.system("rm wd.txt")
 
     cds = open("%s-cds.ffn" % (args.g))
     cds = fasta2(cds)
