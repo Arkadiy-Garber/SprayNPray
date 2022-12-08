@@ -16,7 +16,7 @@ Please also cite the various dependencies used by spray-and-pray: [DIAMOND](http
 
 Provide either raw contigs or ORFs (amino acid) in FASTA format.
 A reference protein dataset also needs to be provided. Ideally, this should be NCBI's RefSeq or nr database from NCBI, 
-which can be downloaded via:
+which can be downloaded via (or follow the install instructions):
     
     wget ftp://ftp.ncbi.nih.gov/blast/db/FASTA/nr.gz
 
@@ -33,6 +33,7 @@ Additionally, the user can specify a set of criteria (e.g. GC-content, read cove
     git clone https://github.com/Arkadiy-Garber/SprayNPray.git
     cd SprayNPray
     bash setup.sh
+    bash dlDB.sh /path/to/preferred/directory/for/db
     conda activate sprayandpray
 
 Please also place spray-and-pray.py into the PATH variable: e.g. ~/bin/SprayNPray. You can update the PATH variable in a file called '.bash_profile' or '.profile' in your home directory.
