@@ -344,6 +344,8 @@ parser.add_argument('--c', type=str, help="Use complete genes only (no genes tha
 parser.add_argument('--hgt', type=str, help="provide this flag if you'd like the program to output potential HGTs into a separate file. "
                                             "This feature is designed for eukaryotic contigs expected to have HGTs of bacterial origin.", const=True, nargs="?")
 
+parser.add_argument('--euk', type=str, help="provide this flag if you'd like the program to split away eukaryotic contigs from prokaryotic ones.", const=True, nargs="?")
+
 parser.add_argument('--fa', type=str, help="write subset of contigs that match user-specified parameters to a separate FASTA file", const=True, nargs="?")
 
 # parser.add_argument('--include_zero_hits', type=str, help="write subset of contigs that match user-specified parameters to a separate FASTA file", const=True, nargs="?")
@@ -393,6 +395,8 @@ parser.add_argument('-minGenes', type=float, help="minimum number of genes that 
 parser.add_argument('-minLength', type=float, help="minimum length of gene to include in the BLAST analysis (default = 90)", default=90)
 
 parser.add_argument('--test', type=str, help="add this flag during testing of this program's dependencies", const=True, nargs="?")
+
+parser.add_argument('--debug', type=str, help="add this flag to debug an issue caused by a dependency", const=True, nargs="?")
 
 # parser.add_argument('-key', type=str, help="Path to the taxmap_slv_ssu_ref_nr_138.1.txt file, which should be in the repository containing this program", default="NA")
 
@@ -568,17 +572,34 @@ if len(file.keys()) == 0:
 if args.blast == "NA":
 
     print("Running Prodigal: calling ORFs from provided contigs")
-    if args.c:
 
-        if args.meta:
-            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta -c > /dev/null 2>&1" % (args.g, args.g, args.g))
+    if args.debug:
+        if args.c:
+
+            if args.meta:
+                os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta -c" % (
+                args.g, args.g, args.g))
+            else:
+                os.system(
+                    "prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -c" % (args.g, args.g, args.g))
         else:
-            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -c > /dev/null 2>&1" % (args.g, args.g, args.g))
+            if args.meta:
+                os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta" % (
+                args.g, args.g, args.g))
+            else:
+                os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn" % (args.g, args.g, args.g))
     else:
-        if args.meta:
-            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta > /dev/null 2>&1" % (args.g, args.g, args.g))
+        if args.c:
+
+            if args.meta:
+                os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta -c > /dev/null 2>&1" % (args.g, args.g, args.g))
+            else:
+                os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -c > /dev/null 2>&1" % (args.g, args.g, args.g))
         else:
-            os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn" % (args.g, args.g, args.g))
+            if args.meta:
+                os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta > /dev/null 2>&1" % (args.g, args.g, args.g))
+            else:
+                os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn > /dev/null 2>&1" % (args.g, args.g, args.g))
 
     # checking the prodigal-produced .faa file that will be used for downstream analysis
     faa = open("%s-proteins.faa" % args.g)
@@ -614,8 +635,12 @@ if args.blast == "NA":
     db = args.ref
     if args.makedb:
         print("Running Diamond: making DIAMOND BLAST database")
-        os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
-        db = "%s.dmnd" % args.ref
+        if args.debug:
+            os.system("diamond makedb --in %s --db %s.dmnd" % (args.ref, args.ref))
+            db = "%s.dmnd" % args.ref
+        else:
+            os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (args.ref, args.ref))
+            db = "%s.dmnd" % args.ref
 
     else:
         ref = args.ref
@@ -630,20 +655,33 @@ if args.blast == "NA":
                 print("SprayNPray cannot locate the diamond blast database file")
                 answer = input("Would you like to SprayNPray to make a diamond blast db? If not, SprayNPray will exit. (y/n): ")
                 if answer == "y":
-                    os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (ref, ref))
-                    db = "%s.dmnd" % ref
+                    if args.debug:
+                        os.system("diamond makedb --in %s --db %s.dmnd" % (ref, ref))
+                        db = "%s.dmnd" % ref
+                    else:
+                        os.system("diamond makedb --in %s --db %s.dmnd > /dev/null 2>&1" % (ref, ref))
+                        db = "%s.dmnd" % ref
                 else:
                     print("Exiting")
                     raise SystemExit
 
     print("Running Diamond BLAST")
-    os.system(
-        "diamond blastp --db %s --query %s-proteins.faa "
-        "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
-        "--out %s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50 > /dev/null 2>&1"
-        % (db, args.g, args.g, args.hits, args.t))
+    if args.debug:
+        os.system(
+            "diamond blastp --db %s --query %s-proteins.faa "
+            "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
+            "--out %s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50"
+            % (db, args.g, args.g, args.hits, args.t))
 
-    blastFile = "%s.blast" % (args.g)
+        blastFile = "%s.blast" % (args.g)
+    else:
+        os.system(
+            "diamond blastp --db %s --query %s-proteins.faa "
+            "--outfmt 6 qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore stitle "
+            "--out %s.blast --max-target-seqs %s --evalue 1E-15 --threads %s --query-cover 50 --subject-cover 50 > /dev/null 2>&1"
+            % (db, args.g, args.g, args.hits, args.t))
+
+        blastFile = "%s.blast" % (args.g)
 else:
     blastFile = args.blast
 
@@ -678,7 +716,10 @@ os.system("mv %s-top%s.csv %s/" % (outfilename, args.hits, outdir))
 
 if args.bam != "NA":
     print("Extracting coverage information from the provided BAM files")
-    os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s > /dev/null 2>&1" % (args.g, args.bam))
+    if args.debug:
+        os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s" % (args.g, args.bam))
+    else:
+        os.system("jgi_summarize_bam_contig_depths --outputDepth %s.depth %s > /dev/null 2>&1" % (args.g, args.bam))
 
 print("Calculating GC-content")
 gcDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
@@ -966,7 +1007,11 @@ except:
     Rdir = allButTheLast(Rdir, "/")
     os.system("rm r.txt")
 
-os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff > /dev/null 2>&1" % (Rdir, outdir, outfilename, outdir, outfilename))
+if args.debug:
+    os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff" % (
+    Rdir, outdir, outfilename, outdir, outfilename))
+else:
+    os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff > /dev/null 2>&1" % (Rdir, outdir, outfilename, outdir, outfilename))
 #################################
 
 if args.fa:
@@ -1070,12 +1115,147 @@ if args.fa:
             else:
                 perc = 100
 
-            if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and cov >= args.cov and cov <= args.COV and aai >= args.aai and hitsperkb >= args.cd and hitsperkb <= args.CD and totalHits >= args.minGenes:
+            # if args.euk:
+            #     if gc >= 0 and gc <= 40 and hitsperkb >= 0 and hitsperkb <= 0.5 and totalHits >= args.minGenes:
+            #         out.write(">" + ls[0] + "\n")
+            #         out.write(file[ls[0]] + "\n")
+            #     else:
+            #         out2.write(">" + ls[0] + "\n")
+            #         out2.write(file[ls[0]] + "\n")
+            #
+            # else:
+
+            if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and \
+                            cov >= args.cov and cov <= args.COV and aai >= args.aai and hitsperkb >= args.cd and \
+                            hitsperkb <= args.CD and totalHits >= args.minGenes:
                 out.write(">" + ls[0] + "\n")
                 out.write(file[ls[0]] + "\n")
             else:
                 out2.write(">" + ls[0] + "\n")
                 out2.write(file[ls[0]] + "\n")
+
+    out.close()
+
+
+if args.euk:
+    print("Writing contigs based on user-specified metrics")
+    summary = open("%s/%s.csv" % (outdir, outfilename))
+    out = open('%s/%s-eukaryotic.contigs.fa' % (outdir, outfilename), "w")
+    out2 = open('%s/%s-prokaryotic.contigs.fa' % (outdir, outfilename), "w")
+
+    for i in summary:
+        ls = i.rstrip().split(",")
+
+        if ls[1] != "contig_length":
+            length = float(ls[1])
+            hitsperkb = float(ls[2])
+            gc = float(ls[4])
+            hits = ls[6].split("; ")
+            totalHits = len(hits)
+
+            try:
+                aai = float(ls[5])
+            except ValueError:
+                aai = 100
+
+            if ls[3] != "Unknown":
+                cov = float(ls[3])
+            else:
+                cov = 0
+
+            if args.domain != "NA":
+                # doing the math
+                matches = 0
+
+                for j in hits:
+                    Genus = j.split(" ")[0]
+
+                    try:
+                        species = j.split(" ")[1]
+                        if species == "sp.":
+                            species = j.split(" ")[2]
+                    except IndexError:
+                        species = "unclassified"
+
+                    Domain = silvaDict[Genus]["Domain"]
+                    Phylum = silvaDict[Genus]["Phylum"]
+                    Class = silvaDict[Genus]["Class"]
+                    if len(silvaDict[Genus]) > 0:
+                        domain = "unclassifed"
+                        phylum = "unclassifed"
+                        Class = "unclassifed"
+
+                    if args.domain != "NA":
+
+                        if args.phylum != "NA":
+
+                            if args.Class != "NA":
+
+                                if args.genus != "NA":
+
+                                    if args.species != "NA":
+
+                                        if species == args.species:
+                                            genusChoices = args.genus
+
+                                            if Genus in genusChoices.split(","):
+
+                                                if args.phage:
+
+                                                    if j.split(" ")[1] == "phage":
+                                                        matches += 1
+                                                else:
+                                                    if j.split(" ")[1] == "phage":
+                                                        pass
+                                                    else:
+                                                        matches += 1
+                                    else:
+                                        genusChoices = args.genus
+                                        if Genus in genusChoices.split(","):
+                                            matches += 1
+                                else:
+                                    if Class == args.Class:
+                                        matches += 1
+                            else:
+                                if Phylum == args.phylum:
+                                    matches += 1
+                        else:
+                            if Domain == args.domain:
+                                matches += 1
+                    else:
+                        if args.phage:
+                            if j.split(" ")[1] == "phage":
+                                matches += 1
+                            else:
+                                matches += 1
+
+                perc = (matches / totalHits) * 100
+
+                if hits[0] == '' and totalHits == 1:
+                    if args.minGenes == 0:
+                        perc = 100
+
+            else:
+                perc = 100
+
+            if args.euk:
+                if gc >= 0 and gc <= 40 and hitsperkb >= 0 and hitsperkb <= 0.5 and totalHits >= args.minGenes:
+                    out.write(">" + ls[0] + "\n")
+                    out.write(file[ls[0]] + "\n")
+                else:
+                    out2.write(">" + ls[0] + "\n")
+                    out2.write(file[ls[0]] + "\n")
+
+            else:
+
+                if perc >= args.perc and gc >= args.gc and gc <= args.GC and length >= args.l and length <= args.L and \
+                                cov >= args.cov and cov <= args.COV and aai >= args.aai and hitsperkb >= args.cd and \
+                                hitsperkb <= args.CD and totalHits >= args.minGenes:
+                    out.write(">" + ls[0] + "\n")
+                    out.write(file[ls[0]] + "\n")
+                else:
+                    out2.write(">" + ls[0] + "\n")
+                    out2.write(file[ls[0]] + "\n")
 
     out.close()
 
@@ -1166,7 +1346,11 @@ if args.bin:
     cds = fasta2(cds)
 
     print("Estimating the number of genomes")
-    os.system("hmmsearch --tblout universal.tblout --cpu %s %s %s-proteins.faa > /dev/null 2>&1" % (args.t, hmms, args.g))
+    if args.debug:
+        os.system(
+            "hmmsearch --tblout universal.tblout --cpu %s %s %s-proteins.faa" % (args.t, hmms, args.g))
+    else:
+        os.system("hmmsearch --tblout universal.tblout --cpu %s %s %s-proteins.faa > /dev/null 2>&1" % (args.t, hmms, args.g))
     tblout = open("universal.tblout")
     tbloutDict = defaultdict(list)
     for i in tblout:
