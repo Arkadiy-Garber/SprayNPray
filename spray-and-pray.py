@@ -962,6 +962,7 @@ os.system("mv %s.csv %s" % (outfilename, outdir))
 # os.system("mv %s-cds.ffn %s/" % (args.g, outdir))
 if args.blast == "NA":
     os.system("mv %s.blast %s/" % (args.g, outdir))
+    blastFile = "%s/%s.blast" % (outdir, args.g)
 
 
 ############## WORDCLOUD LOOP ####################
@@ -1008,8 +1009,7 @@ except:
     os.system("rm r.txt")
 
 if args.debug:
-    os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff" % (
-    Rdir, outdir, outfilename, outdir, outfilename))
+    os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff" % (Rdir, outdir, outfilename, outdir, outfilename))
 else:
     os.system("Rscript --vanilla %s/wordcloud.R %s/%s.words.csv %s/%s.words.tiff > /dev/null 2>&1" % (Rdir, outdir, outfilename, outdir, outfilename))
 #################################
