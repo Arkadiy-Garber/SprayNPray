@@ -784,6 +784,11 @@ silvaDict = defaultdict(lambda: defaultdict(lambda: 'unclassified'))
 try:
     silva = open(silvaFile)
 except FileNotFoundError:
+    if args.debug:
+        print(os.getcwd())
+        print(silvaFile)
+        print(silva)
+        print("")
     print("SprayNPray cannot find the following file: taxmap_slv_ssu_ref_nr_138.1.txt. \n"
           "There is a good chance that it is present in its gzipped form in the SprayNPray \n"
           "directory/folder on your system. Please unzip this file and try running the program \n"
