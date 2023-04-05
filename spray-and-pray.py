@@ -790,7 +790,7 @@ if args.bam != "NA":
     for i in depth:
         ls = i.rstrip().split("\t")
         if ls[1] != "contigLen":
-            depthDict[ls[0]]["length"] = int(ls[1])
+            depthDict[ls[0]]["length"] = float(ls[1])
             depthDict[ls[0]]["depth"] = ls[2]
 elif args.depth != "NA":
     depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
@@ -798,7 +798,7 @@ elif args.depth != "NA":
     for i in depth:
         ls = i.rstrip().split("\t")
         if ls[1] != "contigLen":
-            depthDict[ls[0]]["length"] = int(ls[1])
+            depthDict[ls[0]]["length"] = float(ls[1])
             depthDict[ls[0]]["depth"] = ls[2]
 
 # reading silva headers
