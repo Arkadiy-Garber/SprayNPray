@@ -316,6 +316,10 @@ parser.add_argument('-ref', type=str, help="Input reference protein database (re
 
 parser.add_argument('-bam', type=str, help="Input sorted BAM file with coverage info (optional)", default="NA")
 
+parser.add_argument('-depth', type=str, help="Input depth/coverage information (optional). "
+                                             "Must in the format that is produced from the "
+                                             "jgi_summarize_bam_contig_depths script from the Metabat package", default="NA")
+
 parser.add_argument('-out', type=str, help="Basename for output files", default="NA")
 
 parser.add_argument('-lvl', type=str, help="Level of the taxonomic hierarchy to include in the summary file (Domain, Phylum, Class, Genus, species)", default="NA")
@@ -458,7 +462,10 @@ if args.out == "NA":
     outdir = allButTheLast(genome, ".")
 else:
     if lastItem(args.out) == "/":
-        outfilename = remove(args.out, ["/"])
+        outfilename = args.out
+        outfilename = outfilename[0:len(outfilename)-1]
+        outdir = outfilename
+
     else:
         outfilename = args.out
         os.system("mkdir -p %s" % args.out)
@@ -592,6 +599,7 @@ if args.blast == "NA":
         if args.c:
 
             if args.meta:
+                print("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta -c" % (args.g, args.g, args.g))
                 os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -p meta -c > /dev/null 2>&1" % (args.g, args.g, args.g))
             else:
                 os.system("prodigal -i %s -a %s-proteins.faa -d %s-cds.ffn -c > /dev/null 2>&1" % (args.g, args.g, args.g))
@@ -609,14 +617,20 @@ if args.blast == "NA":
     residues = 0
     Xs = 0
     for i in faa.keys():
+        print(i)
+        print(faa[i])
         if len(faa[i]) >= args.minLength:
             out.write(">" + i + "\n")
             out.write(faa[i] + "\n")
             count += 1
             residues += len(faa[i])
+            # residues = "1000"
             Xs += list(faa[i]).count("X")
 
     if Xs == residues:
+        print(Xs)
+        print(residues)
+        print("")
         print("Looks like you have provided protein sequences instead of contigs to SprayNPray. "
               "Currently, this program only accepts as input a FASTA-formatted file of contigs, "
               "containing nucleotide sequences (e.g. files with extensions fna, fa, or fasta)."
@@ -778,6 +792,14 @@ if args.bam != "NA":
         if ls[1] != "contigLen":
             depthDict[ls[0]]["length"] = int(ls[1])
             depthDict[ls[0]]["depth"] = ls[2]
+elif args.depth != "NA":
+    depthDict = defaultdict(lambda: defaultdict(lambda: 'EMPTY'))
+    depth = open("%s" % args.depth)
+    for i in depth:
+        ls = i.rstrip().split("\t")
+        if ls[1] != "contigLen":
+            depthDict[ls[0]]["length"] = int(ls[1])
+            depthDict[ls[0]]["depth"] = ls[2]
 
 # reading silva headers
 silvaDict = defaultdict(lambda: defaultdict(lambda: 'unclassified'))
@@ -889,6 +911,9 @@ out = open(outfilename + ".csv", "w")
 out.write("contig" + "," + "contig_length" + "," + "hits_per_kb" + "," + "cov" + "," + "GC-content" + "," + "Average_AAI" + "," + "closest_blast_hits" + "\n")
 for i in file.keys():
     if args.bam != "NA":
+        depth = depthDict[i]["depth"]
+        length = depthDict[i]["length"]
+    elif args.depth != "NA":
         depth = depthDict[i]["depth"]
         length = depthDict[i]["length"]
     elif args.spades:
