@@ -461,13 +461,14 @@ if args.out == "NA":
     os.system("mkdir -p %s" % allButTheLast(genome, "."))
     outdir = allButTheLast(genome, ".")
 else:
-    if lastItem(args.out) == "/":
-        outfilename = args.out
+    outfilename = args.out
+    if lastItem(outfilename) == "/":
         outfilename = outfilename[0:len(outfilename)-1]
+        outfilename = lastItem(args.out, "/")
         outdir = outfilename
 
     else:
-        outfilename = args.out
+        outfilename = lastItem(args.out, "/")
         os.system("mkdir -p %s" % args.out)
         outdir = args.out
 
