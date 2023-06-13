@@ -464,11 +464,11 @@ else:
     outfilename = args.out
     if lastItem(outfilename) == "/":
         outfilename = outfilename[0:len(outfilename)-1]
-        outfilename = lastItem(args.out, "/")
+        outfilename = lastItem(outfilename.split("/"))
         outdir = outfilename
 
     else:
-        outfilename = lastItem(args.out, "/")
+        outfilename = lastItem(outfilename.split("/"))
         os.system("mkdir -p %s" % args.out)
         outdir = args.out
 
